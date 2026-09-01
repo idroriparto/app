@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="IdroRiparto — ripartizione chiara delle spese idriche condominiali. Millesimi, consumi, quote fisse e parti comuni.">
+  <meta name="theme-color" content="#2264E2">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="IdroRiparto">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>IdroRiparto</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #2264E2;
+    }
+    .boot {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      color: #FFFFFF;
+      font-family: "Nimbus Sans L", Arial, sans-serif;
+    }
+    .boot img {
+      width: 88px;
+      height: 88px;
+      border-radius: 22px;
+      box-shadow: 0 10px 30px rgba(10, 58, 66, 0.18);
+    }
+    .boot h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+    .boot p {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #5A6B71;
+    }
+  </style>
+</head>
+<body>
+  <div class="boot">
+    <img src="favicon.png" alt="IdroRiparto">
+    <h1>IdroRiparto</h1>
+    <p>Acqua condominiale</p>
+  </div>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

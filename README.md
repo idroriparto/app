@@ -1,5 +1,5 @@
 <div align="center">
-# IdroRiparto
+ <h1>IdroRiparto</h1>
 
 App per la **ripartizione dei consumi e delle spese dell’acqua condominiale**.
 

@@ -153,6 +153,12 @@ jobs:
           name: idroriparto-rpm
           path: dist/rpm
 
+      - name: Download web artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: idroriparto-web
+          path: build/web
+
       - name: Publish web page
         uses: peaceiris/actions-gh-pages@v4
         with:

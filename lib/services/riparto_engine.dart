@@ -18,15 +18,21 @@ class RipartoEngine {
     String? id,
     DateTime? ora,
   }) {
-    final elenco = [...unita]..sort((a, b) {
-      final o = a.ordine.compareTo(b.ordine);
-      if (o != 0) return o;
-      return a.interno.compareTo(b.interno);
-    });
+    final elenco = [...unita]
+      ..sort((a, b) {
+        final o = a.ordine.compareTo(b.ordine);
+        if (o != 0) return o;
+        return a.interno.compareTo(b.interno);
+      });
 
     final avvisi = <String>[];
     if (elenco.isEmpty) {
-      return _vuoto(bolletta, avvisi..add('Nessuna unità immobiliare.'), id, ora);
+      return _vuoto(
+        bolletta,
+        avvisi..add('Nessuna unità immobiliare.'),
+        id,
+        ora,
+      );
     }
 
     final consumi = <String, double>{};
@@ -73,9 +79,7 @@ class RipartoEngine {
       );
     }
 
-    final zeroConsumo = elenco
-        .where((u) => (consumi[u.id] ?? 0) == 0)
-        .toList();
+    final zeroConsumo = elenco.where((u) => (consumi[u.id] ?? 0) == 0).toList();
     if (bolletta.metodo == MetodoRiparto.consumo && zeroConsumo.isNotEmpty) {
       avvisi.add(
         '${zeroConsumo.length} unità con consumo 0 non partecipano al riparto a solo consumo.',
@@ -93,7 +97,10 @@ class RipartoEngine {
       );
     }
 
-    final occupantiSum = elenco.fold<int>(0, (a, u) => a + (u.sfitto ? 0 : u.occupanti));
+    final occupantiSum = elenco.fold<int>(
+      0,
+      (a, u) => a + (u.sfitto ? 0 : u.occupanti),
+    );
     if (occupantiSum == 0 &&
         (bolletta.metodo == MetodoRiparto.teste ||
             bolletta.criterioFissa == CriterioQuota.teste)) {
@@ -131,8 +138,10 @@ class RipartoEngine {
         // Parte variabile (acquedotto + fognatura + depurazione).
         final prezzoMc = mcRif > 0 ? bolletta.variabile / mcRif : 0.0;
         final costoComune = prezzoMc * consumoComune;
-        final costoInd =
-            (bolletta.variabile - costoComune).clamp(0, bolletta.variabile);
+        final costoInd = (bolletta.variabile - costoComune).clamp(
+          0,
+          bolletta.variabile,
+        );
         final pCons = elenco.map((u) => consumi[u.id] ?? 0).toList();
 
         if (costoInd > 0 && pCons.any((x) => x > 0)) {
@@ -174,9 +183,18 @@ class RipartoEngine {
 
       case MetodoRiparto.millesimi:
         note = 'Intera bolletta ripartita in base ai millesimi di proprietà.';
-        _riempi(fissa, _split(bolletta.quotaFissa, _pesi(elenco, CriterioQuota.millesimi)));
-        _riempi(cons, _split(bolletta.variabile, _pesi(elenco, CriterioQuota.millesimi)));
-        _riempi(extra, _split(bolletta.extra, _pesi(elenco, CriterioQuota.millesimi)));
+        _riempi(
+          fissa,
+          _split(bolletta.quotaFissa, _pesi(elenco, CriterioQuota.millesimi)),
+        );
+        _riempi(
+          cons,
+          _split(bolletta.variabile, _pesi(elenco, CriterioQuota.millesimi)),
+        );
+        _riempi(
+          extra,
+          _split(bolletta.extra, _pesi(elenco, CriterioQuota.millesimi)),
+        );
       case MetodoRiparto.consumo:
         note = 'Intera bolletta ripartita in base ai metri cubi consumati.';
         final p = elenco.map((u) => consumi[u.id] ?? 0).toList();
@@ -184,9 +202,18 @@ class RipartoEngine {
           avvisi.add('Nessun consumo: fallback sui millesimi.');
           note =
               'Nessun consumo rilevato: fallback automatico sui millesimi di proprietà.';
-          _riempi(fissa, _split(bolletta.quotaFissa, _pesi(elenco, CriterioQuota.millesimi)));
-          _riempi(cons, _split(bolletta.variabile, _pesi(elenco, CriterioQuota.millesimi)));
-          _riempi(extra, _split(bolletta.extra, _pesi(elenco, CriterioQuota.millesimi)));
+          _riempi(
+            fissa,
+            _split(bolletta.quotaFissa, _pesi(elenco, CriterioQuota.millesimi)),
+          );
+          _riempi(
+            cons,
+            _split(bolletta.variabile, _pesi(elenco, CriterioQuota.millesimi)),
+          );
+          _riempi(
+            extra,
+            _split(bolletta.extra, _pesi(elenco, CriterioQuota.millesimi)),
+          );
         } else {
           _riempi(fissa, _split(bolletta.quotaFissa, p));
           _riempi(cons, _split(bolletta.variabile, p));
@@ -194,20 +221,35 @@ class RipartoEngine {
         }
       case MetodoRiparto.teste:
         note = 'Intera bolletta ripartita in base agli occupanti.';
-        _riempi(fissa, _split(bolletta.quotaFissa, _pesi(elenco, CriterioQuota.teste)));
-        _riempi(cons, _split(bolletta.variabile, _pesi(elenco, CriterioQuota.teste)));
-        _riempi(extra, _split(bolletta.extra, _pesi(elenco, CriterioQuota.teste)));
+        _riempi(
+          fissa,
+          _split(bolletta.quotaFissa, _pesi(elenco, CriterioQuota.teste)),
+        );
+        _riempi(
+          cons,
+          _split(bolletta.variabile, _pesi(elenco, CriterioQuota.teste)),
+        );
+        _riempi(
+          extra,
+          _split(bolletta.extra, _pesi(elenco, CriterioQuota.teste)),
+        );
       case MetodoRiparto.misto:
         note =
             'Quota fissa: ${bolletta.criterioFissa.label.toLowerCase()}. '
             'Consumi individuali: m³. '
             'Parti comuni e perdite: ${bolletta.criterioComune.label.toLowerCase()}. '
             'IVA e altre voci: in proporzione al subtotale.';
-        _riempi(fissa, _split(bolletta.quotaFissa, _pesi(elenco, bolletta.criterioFissa)));
+        _riempi(
+          fissa,
+          _split(bolletta.quotaFissa, _pesi(elenco, bolletta.criterioFissa)),
+        );
 
         final prezzoMc = mcRif > 0 ? bolletta.variabile / mcRif : 0.0;
         final costoComune = prezzoMc * consumoComune;
-        final costoInd = (bolletta.variabile - costoComune).clamp(0, bolletta.variabile);
+        final costoInd = (bolletta.variabile - costoComune).clamp(
+          0,
+          bolletta.variabile,
+        );
         final pCons = elenco.map((u) => consumi[u.id] ?? 0).toList();
         if (costoInd > 0 && pCons.any((x) => x > 0)) {
           _riempi(cons, _split(costoInd.toDouble(), pCons));
@@ -221,7 +263,10 @@ class RipartoEngine {
           );
         }
         if (costoComune > 0) {
-          _riempi(comune, _split(costoComune, _pesi(elenco, bolletta.criterioComune)));
+          _riempi(
+            comune,
+            _split(costoComune, _pesi(elenco, bolletta.criterioComune)),
+          );
         }
         if (bolletta.extra > 0) {
           final base = List<double>.generate(
@@ -229,7 +274,10 @@ class RipartoEngine {
             (i) => fissa[i] + cons[i] + comune[i],
           );
           if (base.every((x) => x <= 0)) {
-            _riempi(extra, _split(bolletta.extra, _pesi(elenco, CriterioQuota.millesimi)));
+            _riempi(
+              extra,
+              _split(bolletta.extra, _pesi(elenco, CriterioQuota.millesimi)),
+            );
           } else {
             _riempi(extra, _split(bolletta.extra, base));
           }

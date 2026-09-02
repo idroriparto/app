@@ -42,8 +42,8 @@ class IdroRipartoApp extends StatelessWidget {
           return MaterialApp(
             title: 'IdroRiparto',
             debugShowCheckedModeBanner: false,
-            theme: fLight.toApproximateMaterialTheme(),
-            darkTheme: fDark.toApproximateMaterialTheme(),
+            theme: materialThemeOf(fLight),
+            darkTheme: materialThemeOf(fDark),
             themeMode: store.themeMode,
             locale: const Locale('it', 'IT'),
             supportedLocales: const [

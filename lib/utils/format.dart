@@ -22,7 +22,11 @@ String mill(num? v) => millFormat.format(v ?? 0);
 String pct(num? v) => '${pctFormat.format(v ?? 0)} %';
 
 double? parseItNumber(String raw) {
-  var s = raw.trim().replaceAll('€', '').replaceAll('m³', '').replaceAll('m3', '');
+  var s = raw
+      .trim()
+      .replaceAll('€', '')
+      .replaceAll('m³', '')
+      .replaceAll('m3', '');
   s = s.replaceAll('\u00a0', '').replaceAll(' ', '');
   if (s.isEmpty) return null;
   if (s.contains(',') && s.contains('.')) {
@@ -41,7 +45,8 @@ double? parseItNumber(String raw) {
 
 String periodLabel(DateTime dal, DateTime al) {
   if (dal.year == al.year && dal.month == al.month) {
-    return toBeginningOfSentenceCase(monthYear.format(dal)) ?? monthYear.format(dal);
+    return toBeginningOfSentenceCase(monthYear.format(dal)) ??
+        monthYear.format(dal);
   }
   if (dal.year == al.year) {
     final a = DateFormat('d MMM', 'it_IT').format(dal);

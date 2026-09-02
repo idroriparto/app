@@ -157,8 +157,7 @@ class Condominio {
       amministratore: amministratore ?? this.amministratore,
       fornitore: fornitore ?? this.fornitore,
       codiceUtenza: codiceUtenza ?? this.codiceUtenza,
-      millesimiRiferimento:
-          millesimiRiferimento ?? this.millesimiRiferimento,
+      millesimiRiferimento: millesimiRiferimento ?? this.millesimiRiferimento,
       metodoDefault: metodoDefault ?? this.metodoDefault,
       criterioFissa: criterioFissa ?? this.criterioFissa,
       criterioComune: criterioComune ?? this.criterioComune,
@@ -250,8 +249,7 @@ class UnitaImmobiliare {
   String get titolo =>
       scala.isEmpty ? 'Interno $interno' : 'Scala $scala · int. $interno';
 
-  String get intestatario =>
-      (occupante != null && occupante!.trim().isNotEmpty)
+  String get intestatario => (occupante != null && occupante!.trim().isNotEmpty)
       ? occupante!.trim()
       : proprietario;
 
@@ -317,24 +315,23 @@ class UnitaImmobiliare {
     'ordine': ordine,
   };
 
-  factory UnitaImmobiliare.fromJson(Map<String, dynamic> j) =>
-      UnitaImmobiliare(
-        id: j['id'] as String,
-        interno: j['interno'] as String? ?? '',
-        scala: j['scala'] as String? ?? '',
-        piano: j['piano'] as String? ?? '',
-        proprietario: j['proprietario'] as String? ?? '',
-        occupante: j['occupante'] as String?,
-        email: j['email'] as String?,
-        telefono: j['telefono'] as String?,
-        millesimi: asDouble(j['millesimi']),
-        occupanti: asInt(j['occupanti'], 1),
-        sfitto: j['sfitto'] == true,
-        haContatore: j['haContatore'] != false,
-        matricola: j['matricola'] as String?,
-        note: j['note'] as String? ?? '',
-        ordine: asInt(j['ordine']),
-      );
+  factory UnitaImmobiliare.fromJson(Map<String, dynamic> j) => UnitaImmobiliare(
+    id: j['id'] as String,
+    interno: j['interno'] as String? ?? '',
+    scala: j['scala'] as String? ?? '',
+    piano: j['piano'] as String? ?? '',
+    proprietario: j['proprietario'] as String? ?? '',
+    occupante: j['occupante'] as String?,
+    email: j['email'] as String?,
+    telefono: j['telefono'] as String?,
+    millesimi: asDouble(j['millesimi']),
+    occupanti: asInt(j['occupanti'], 1),
+    sfitto: j['sfitto'] == true,
+    haContatore: j['haContatore'] != false,
+    matricola: j['matricola'] as String?,
+    note: j['note'] as String? ?? '',
+    ordine: asInt(j['ordine']),
+  );
 }
 
 class Lettura {

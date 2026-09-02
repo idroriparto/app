@@ -39,9 +39,13 @@ class AppSnapshot {
   factory AppSnapshot.fromJson(Map<String, dynamic> j) => AppSnapshot(
     condominio: j['condominio'] == null
         ? null
-        : Condominio.fromJson(Map<String, dynamic>.from(j['condominio'] as Map)),
+        : Condominio.fromJson(
+            Map<String, dynamic>.from(j['condominio'] as Map),
+          ),
     unita: (j['unita'] as List? ?? [])
-        .map((e) => UnitaImmobiliare.fromJson(Map<String, dynamic>.from(e as Map)))
+        .map(
+          (e) => UnitaImmobiliare.fromJson(Map<String, dynamic>.from(e as Map)),
+        )
         .toList(),
     letture: (j['letture'] as List? ?? [])
         .map((e) => Lettura.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -50,7 +54,9 @@ class AppSnapshot {
         .map((e) => Bolletta.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList(),
     riparti: (j['riparti'] as List? ?? [])
-        .map((e) => RisultatoRiparto.fromJson(Map<String, dynamic>.from(e as Map)))
+        .map(
+          (e) => RisultatoRiparto.fromJson(Map<String, dynamic>.from(e as Map)),
+        )
         .toList(),
     theme: ThemeChoice.values.firstWhere(
       (e) => e.name == j['theme'],
@@ -100,10 +106,8 @@ class AppStore extends ChangeNotifier {
   double get sommaMillesimi =>
       _data.unita.fold<double>(0, (a, u) => a + u.millesimi);
 
-  int get occupantiTotali => _data.unita.fold<int>(
-    0,
-    (a, u) => a + (u.sfitto ? 0 : u.occupanti),
-  );
+  int get occupantiTotali =>
+      _data.unita.fold<int>(0, (a, u) => a + (u.sfitto ? 0 : u.occupanti));
 
   Bolletta? get ultimaBolletta => bollette.isEmpty ? null : bollette.first;
 
@@ -115,7 +119,8 @@ class AppStore extends ChangeNotifier {
     );
   }
 
-  UnitaImmobiliare? unitaById(String id) {
+  UnitaImmobiliare? unitaById(String? id) {
+    if (id == null || id.isEmpty) return null;
     for (final u in _data.unita) {
       if (u.id == id) return u;
     }
@@ -187,9 +192,7 @@ class AppStore extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_storageKey);
       if (raw != null && raw.isNotEmpty) {
-        _data = AppSnapshot.fromJson(
-          jsonDecode(raw) as Map<String, dynamic>,
-        );
+        _data = AppSnapshot.fromJson(jsonDecode(raw) as Map<String, dynamic>);
       }
     } catch (e) {
       debugPrint('IdroRiparto load error: $e');
@@ -444,11 +447,8 @@ bool _sameDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
 
 class StoreScope extends InheritedNotifier<AppStore> {
-  const StoreScope({
-    super.key,
-    required AppStore store,
-    required super.child,
-  }) : super(notifier: store);
+  const StoreScope({super.key, required AppStore store, required super.child})
+    : super(notifier: store);
 
   static AppStore of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<StoreScope>();

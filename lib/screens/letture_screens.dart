@@ -23,60 +23,59 @@ class LettureScreen extends StatelessWidget {
     }
     final keys = groups.keys.toList();
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: colors.primary,
-        foregroundColor: colors.primaryForeground,
-        elevation: 0,
-        onPressed: () => pushApp(context, const LetturaBulkScreen()),
-        icon: HugeIcon(
-          icon: HugeIcons.strokeRoundedClipboard,
-          size: 20,
-          color: colors.primaryForeground,
-        ),
-        label: Text(
-          'Campagna letture',
-          style: TextStyle(color: colors.primaryForeground),
-        ),
-      ),
-      body: SafeArea(
-        child: store.letture.isEmpty
-            ? EmptyState(
-                icon: HugeIcons.strokeRoundedDashboardSpeed02,
-                title: 'Nessuna lettura',
-                subtitle:
-                    'Registra i contatori di tutte le unità in una volta sola. Il consumo si calcola sulla differenza rispetto alla lettura precedente.',
-                actionLabel: 'Registra i contatori',
-                onAction: () =>
-                    pushApp(context, const LetturaBulkScreen()),
-              )
-            : ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                children: [
-                  MaxWidth(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Letture contatori',
-                          style: typo.display.sm
-                              .copyWith(fontWeight: FontWeight.w700),
+    return FScaffold(
+      childPad: false,
+      child: Stack(
+        children: [
+          SafeArea(
+            child: store.letture.isEmpty
+                ? EmptyState(
+                    icon: HugeIcons.strokeRoundedDashboardSpeed02,
+                    title: 'Nessuna lettura',
+                    subtitle:
+                        'Registra i contatori di tutte le unità in una volta sola. Il consumo si calcola sulla differenza rispetto alla lettura precedente.',
+                    actionLabel: 'Registra i contatori',
+                    onAction: () => pushApp(context, const LetturaBulkScreen()),
+                  )
+                : ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 108),
+                    children: [
+                      MaxWidth(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Letture contatori',
+                              style: typo.display.sm.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Ogni campagna raccoglie il generale e i sottocontatori nella stessa data.',
+                              style: typo.body.sm.copyWith(
+                                color: colors.mutedForeground,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            for (final k in keys)
+                              _DayGroup(label: k, letture: groups[k]!),
+                          ],
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Ogni campagna raccoglie il generale e i sottocontatori nella stessa data.',
-                          style: typo.body.sm
-                              .copyWith(color: colors.mutedForeground),
-                        ),
-                        const SizedBox(height: 18),
-                        for (final k in keys)
-                          _DayGroup(label: k, letture: groups[k]!),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+          ),
+          Positioned(
+            right: 24,
+            bottom: 28,
+            child: FabAction(
+              icon: HugeIcons.strokeRoundedClipboard,
+              label: 'Campagna letture',
+              onPress: () => pushApp(context, const LetturaBulkScreen()),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -105,8 +104,9 @@ class _DayGroup extends StatelessWidget {
           children: [
             Text(
               label,
-              style: context.theme.typography.body.lg
-                  .copyWith(fontWeight: FontWeight.w700),
+              style: context.theme.typography.body.lg.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
             if (gen.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -154,11 +154,12 @@ class _DayGroup extends StatelessWidget {
                   ],
                 ),
               ),
-            Divider(color: colors.border),
+            const FDivider(),
             Text(
               'Somma sottocontatori: ${mc(somma)}',
-              style: context.theme.typography.body.xs
-                  .copyWith(color: colors.mutedForeground),
+              style: context.theme.typography.body.xs.copyWith(
+                color: colors.mutedForeground,
+              ),
             ),
           ],
         ),
@@ -233,13 +234,13 @@ class _LetturaBulkScreenState extends State<LetturaBulkScreen> {
     final store = StoreScope.of(context);
     final colors = context.theme.colors;
     final typo = context.theme.typography;
-    return Scaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(
-        backgroundColor: colors.background,
+    return FScaffold(
+      childPad: false,
+      header: FHeader.nested(
+        prefixes: [backAction(context)],
         title: const Text('Campagna letture'),
       ),
-      body: ListView(
+      child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
           MaxWidth(
@@ -266,13 +267,15 @@ class _LetturaBulkScreenState extends State<LetturaBulkScreen> {
                           children: [
                             Text(
                               'Data della campagna',
-                              style: typo.body.xs
-                                  .copyWith(color: colors.mutedForeground),
+                              style: typo.body.xs.copyWith(
+                                color: colors.mutedForeground,
+                              ),
                             ),
                             Text(
                               dateIt.format(data),
-                              style: typo.body.md
-                                  .copyWith(fontWeight: FontWeight.w700),
+                              style: typo.body.md.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ],
                         ),
@@ -289,8 +292,9 @@ class _LetturaBulkScreenState extends State<LetturaBulkScreen> {
                 ItField(
                   label: 'Contatore generale (m³)',
                   controller: generale,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   hint: 'Lettura del contatore MM / gestore',
                 ),
                 const SizedBox(height: 18),
@@ -315,14 +319,14 @@ class _LetturaBulkScreenState extends State<LetturaBulkScreen> {
                               ),
                               Text(
                                 () {
-                                  final prev =
-                                      store.ultimaLetturaDi(u.id);
+                                  final prev = store.ultimaLetturaDi(u.id);
                                   return prev == null
                                       ? 'Nessuna lettura precedente'
                                       : 'Prec. ${mcNum(prev.valore)} · ${dateShort.format(prev.data)}';
                                 }(),
-                                style: typo.body.xs
-                                    .copyWith(color: colors.mutedForeground),
+                                style: typo.body.xs.copyWith(
+                                  color: colors.mutedForeground,
+                                ),
                               ),
                             ],
                           ),
@@ -335,10 +339,9 @@ class _LetturaBulkScreenState extends State<LetturaBulkScreen> {
                               controller: controllers[u.id],
                               onChange: (_) => setState(() {}),
                             ),
-                            keyboardType:
-                                const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
                             textAlign: TextAlign.right,
                             hint: 'm³',
                           ),
@@ -365,8 +368,9 @@ class _LetturaBulkScreenState extends State<LetturaBulkScreen> {
                             ? 'Inserisci le letture assolute, non i consumi.'
                             : 'Somma letture $n unità: ${mc(sum)}'
                                   '${g == null ? '' : ' · generale ${mc(g)}'}',
-                        style: typo.body.xs
-                            .copyWith(color: colors.mutedForeground),
+                        style: typo.body.xs.copyWith(
+                          color: colors.mutedForeground,
+                        ),
                       ),
                     );
                   },

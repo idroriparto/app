@@ -138,7 +138,10 @@ class PdfService {
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text('PROSPETTO DI RIPARTIZIONE', style: st(9, c: muted)),
+                      pw.Text(
+                        'PROSPETTO DI RIPARTIZIONE',
+                        style: st(9, c: muted),
+                      ),
                       pw.Text(
                         'Spese idriche condominiali',
                         style: st(16, b: true),
@@ -186,13 +189,24 @@ class PdfService {
                     ('Condominio', condominio.nome),
                     ('Indirizzo', condominio.indirizzoCompleto),
                     ('Amministratore', condominio.amministratore),
-                    ('Fornitore', bolletta.fornitore.isEmpty ? condominio.fornitore : bolletta.fornitore),
+                    (
+                      'Fornitore',
+                      bolletta.fornitore.isEmpty
+                          ? condominio.fornitore
+                          : bolletta.fornitore,
+                    ),
                   ]),
                 ),
                 pw.Expanded(
                   child: _kv(st, [
-                    ('Periodo', periodLabel(bolletta.periodoDal, bolletta.periodoAl)),
-                    ('Documento', bolletta.numero.isEmpty ? '—' : bolletta.numero),
+                    (
+                      'Periodo',
+                      periodLabel(bolletta.periodoDal, bolletta.periodoAl),
+                    ),
+                    (
+                      'Documento',
+                      bolletta.numero.isEmpty ? '—' : bolletta.numero,
+                    ),
                     ('Metodo', bolletta.metodo.titolo),
                     (
                       'Criteri',
@@ -209,13 +223,21 @@ class PdfService {
           pw.TableHelper.fromTextArray(
             headers: ['Voce', 'Importo', 'Note'],
             data: [
-              ['Quota fissa / canone', euro(bolletta.quotaFissa), 'Ripartita a ${bolletta.criterioFissa.label.toLowerCase()}'],
+              [
+                'Quota fissa / canone',
+                euro(bolletta.quotaFissa),
+                'Ripartita a ${bolletta.criterioFissa.label.toLowerCase()}',
+              ],
               ['Acquedotto', euro(bolletta.acquedotto), ''],
               ['Fognatura', euro(bolletta.fognatura), ''],
               ['Depurazione', euro(bolletta.depurazione), ''],
               ['IVA', euro(bolletta.iva), 'Spalmata sul subtotale'],
               ['Altro', euro(bolletta.altro), ''],
-              ['TOTALE BOLLETTA', euro(bolletta.totale), '${mcNum(bolletta.mcFatturati)} m³ fatturati'],
+              [
+                'TOTALE BOLLETTA',
+                euro(bolletta.totale),
+                '${mcNum(bolletta.mcFatturati)} m³ fatturati',
+              ],
             ],
             headerStyle: st(8, b: true, c: PdfColors.white),
             headerDecoration: pw.BoxDecoration(color: deep),
@@ -266,7 +288,10 @@ class PdfService {
             ),
           ),
           pw.SizedBox(height: 18),
-          pw.Text('Prospetti individuali (da staccare)', style: st(11, b: true)),
+          pw.Text(
+            'Prospetti individuali (da staccare)',
+            style: st(11, b: true),
+          ),
           pw.SizedBox(height: 8),
           pw.Wrap(
             spacing: 8,
@@ -303,7 +328,10 @@ class PdfService {
                         style: st(7),
                       ),
                       pw.SizedBox(height: 3),
-                      pw.Text('DOVUTO  ${euro(r.totale)}', style: st(9, b: true, c: teal)),
+                      pw.Text(
+                        'DOVUTO  ${euro(r.totale)}',
+                        style: st(9, b: true, c: teal),
+                      ),
                     ],
                   ),
                 ),
@@ -360,10 +388,7 @@ class PdfService {
               text: pw.TextSpan(
                 children: [
                   pw.TextSpan(text: '${r.$1}: ', style: st(8, b: true)),
-                  pw.TextSpan(
-                    text: r.$2.isEmpty ? '—' : r.$2,
-                    style: st(8),
-                  ),
+                  pw.TextSpan(text: r.$2.isEmpty ? '—' : r.$2, style: st(8)),
                 ],
               ),
             ),

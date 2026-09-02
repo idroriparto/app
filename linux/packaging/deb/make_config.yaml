@@ -1,0 +1,40 @@
+display_name: IdroRiparto
+package_name: idroriparto
+
+maintainer:
+  name: Francesco Vangi
+  email: idroriparto@yahoo.com
+
+priority: optional
+
+section: x11
+
+installed_size: 15700
+
+dependencies:
+  - mpv
+  - libappindicator3-1 | libayatana-appindicator3-1
+  - gir1.2-appindicator3-0.1 | gir1.2-ayatanaappindicator3-0.1
+  - libsecret-1-0
+  - libnotify-bin
+  - libjsoncpp25
+  - libmpv1 | libmpv2
+  - xdg-user-dirs
+
+essential: false
+
+icon: linux/assets/idroriparto.png
+
+postuninstall_scripts:
+  - echo "Sorry to see you go."
+
+keywords:
+  - acqua
+  - ripartizione
+
+generic_name: Ripartizione consumi dell'acqua condominiale
+
+categories:
+  - Utility
+
+startup_notify: true

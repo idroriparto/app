@@ -17,11 +17,7 @@ class Hi implements FIcon {
   Widget call(BuildContext context, {String? semanticsLabel}) => Builder(
     builder: (context) {
       final data = IconTheme.of(context);
-      return HugeIcon(
-        icon: glyph,
-        size: data.size ?? 22,
-        color: data.color,
-      );
+      return HugeIcon(icon: glyph, size: data.size ?? 22, color: data.color);
     },
   );
 

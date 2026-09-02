@@ -7,7 +7,6 @@ import 'package:hugeicons/hugeicons.dart';
 
 import '../models/models.dart';
 import '../utils/format.dart';
-import '../theme/icons.dart';
 
 /// ---------------------------------------------------------------------------
 /// Logo
@@ -84,7 +83,7 @@ class SectionLabel extends StatelessWidget {
 }
 
 /// ---------------------------------------------------------------------------
-/// Card
+/// Card (wrap Forui FCard; tappabile tramite FTappable)
 /// ---------------------------------------------------------------------------
 class AppCard extends StatelessWidget {
   const AppCard({
@@ -100,26 +99,12 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.theme.colors;
-    final radius = context.theme.style.borderRadius.lg;
-    final shape = RoundedRectangleBorder(
-      borderRadius: radius,
-      side: BorderSide(color: colors.border),
-    );
     final content = Padding(padding: padding, child: child);
-    if (onTap == null) {
-      return Material(
-        color: colors.card,
-        shape: shape,
-        clipBehavior: Clip.antiAlias,
-        child: content,
-      );
-    }
-    return Material(
-      color: colors.card,
-      shape: shape,
+    return FCard(
       clipBehavior: Clip.antiAlias,
-      child: InkWell(onTap: onTap, child: content),
+      child: onTap == null
+          ? content
+          : FTappable(onPress: onTap, child: content),
     );
   }
 }
@@ -303,12 +288,7 @@ class UnitColor {
 }
 
 class StatusPill extends StatelessWidget {
-  const StatusPill({
-    super.key,
-    required this.label,
-    this.color,
-    this.icon,
-  });
+  const StatusPill({super.key, required this.label, this.color, this.icon});
   final String label;
   final Color? color;
   final List<List<dynamic>>? icon;
@@ -381,9 +361,9 @@ class WarningBanner extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: FAlert(
-              icon: const IconTheme(
-                data: IconThemeData(size: 18),
-                child: Hi(HugeIcons.strokeRoundedAlertCircle),
+              icon: const HugeIcon(
+                icon: HugeIcons.strokeRoundedAlertCircle,
+                size: 18,
               ),
               title: const Text('Da verificare'),
               subtitle: Text(m),
@@ -469,6 +449,7 @@ class ItField extends StatelessWidget {
     this.textAlign = TextAlign.start,
     this.suffix,
     this.prefixIcon,
+    this.formFieldKey,
   });
 
   final String label;
@@ -485,14 +466,16 @@ class ItField extends StatelessWidget {
   final Widget? suffix;
   final List<List<dynamic>>? prefixIcon;
 
+  /// Chiave dello stato FormField, per validare il campo senza un `Form`
+  /// (i campi forui si validano singolarmente, non esiste un FForm).
+  final Key? formFieldKey;
+
   @override
   Widget build(BuildContext context) {
     return FTextFormField(
       control: FTextFieldControl.managed(
         controller: controller,
-        onChange: onChanged == null
-            ? null
-            : (value) => onChanged!(value.text),
+        onChange: onChanged == null ? null : (value) => onChanged!(value.text),
       ),
       enabled: enabled,
       keyboardType: keyboardType,
@@ -501,15 +484,16 @@ class ItField extends StatelessWidget {
       textAlign: textAlign,
       inputFormatters: inputFormatters,
       validator: validator,
+      formFieldKey: formFieldKey,
       label: Text(label),
       hint: hint,
       prefixBuilder: prefixIcon == null
           ? null
           : (context, style, variants) => HugeIcon(
-                icon: prefixIcon!,
-                size: 18,
-                color: context.theme.colors.mutedForeground,
-              ),
+              icon: prefixIcon!,
+              size: 18,
+              color: context.theme.colors.mutedForeground,
+            ),
       suffixBuilder: suffix == null
           ? null
           : (context, style, variants) => Padding(
@@ -544,9 +528,10 @@ class ShareBar extends StatelessWidget {
             for (final p in parts)
               if (p.value > 0)
                 Expanded(
-                  flex: (p.value / (tot <= 0 ? 1 : tot) * 1000)
-                      .round()
-                      .clamp(1, 1000),
+                  flex: (p.value / (tot <= 0 ? 1 : tot) * 1000).round().clamp(
+                    1,
+                    1000,
+                  ),
                   child: ColoredBox(color: p.color),
                 ),
           ],
@@ -564,7 +549,9 @@ class UnitShareChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (righe.isEmpty) return const SizedBox.shrink();
     final colors = context.theme.colors;
-    final maxV = righe.map((e) => e.totale).fold<double>(0, (a, b) => a > b ? a : b);
+    final maxV = righe
+        .map((e) => e.totale)
+        .fold<double>(0, (a, b) => a > b ? a : b);
     return Column(
       children: [
         for (var i = 0; i < righe.length; i++)
@@ -585,9 +572,7 @@ class UnitShareChart extends StatelessWidget {
                   child: TweenAnimationBuilder<double>(
                     tween: Tween(
                       begin: 0,
-                      end: maxV <= 0
-                          ? 0
-                          : (righe[i].totale / maxV).clamp(0, 1),
+                      end: maxV <= 0 ? 0 : (righe[i].totale / maxV).clamp(0, 1),
                     ),
                     duration: const Duration(milliseconds: 420),
                     curve: Curves.easeOutCubic,
@@ -676,6 +661,38 @@ Future<T?> pushApp<T>(BuildContext context, Widget page) {
   return Navigator.of(context).push<T>(AppPageRoute(builder: (_) => page));
 }
 
+/// Azione "indietro" per gli header delle schermate aperte con [pushApp]:
+/// equivale al tasto back automatico dell'AppBar Material.
+FHeaderAction backAction(BuildContext context) =>
+    FHeaderAction.back(onPress: () => Navigator.of(context).maybePop());
+
+/// Pulsante flottante Forui-style: sostituisce la FloatingActionButton
+/// Material (forui non ha un widget FAB dedicato). Da posizionare con uno
+/// [Positioned] in fondo alle schermate a elenco.
+class FabAction extends StatelessWidget {
+  const FabAction({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onPress,
+  });
+
+  final Object icon;
+  final String label;
+  final VoidCallback onPress;
+
+  @override
+  Widget build(BuildContext context) {
+    // Il variant primario di forui usa già colors.primary / primaryForeground,
+    // come la FloatingActionButton.extended che questo widget sostituisce.
+    return FButton(
+      onPress: onPress,
+      prefix: HugeIcon(icon: icon as List<List<dynamic>>, size: 18),
+      child: Text(label),
+    );
+  }
+}
+
 class Appear extends StatelessWidget {
   const Appear({
     super.key,
@@ -710,6 +727,9 @@ class Appear extends StatelessWidget {
   }
 }
 
+/// Selettore data Forui (FCalendar in un FDialog). Ritorna la data scelta,
+/// oppure null se annullata. FCalendar lavora con DateTime UTC a mezzanotte:
+/// la scelta viene riconvertita in DateTime locale.
 Future<DateTime?> pickDate(
   BuildContext context, {
   DateTime? initial,
@@ -717,12 +737,61 @@ Future<DateTime?> pickDate(
   DateTime? last,
 }) {
   final now = DateTime.now();
-  return showDatePicker(
+  final lo = first ?? DateTime(now.year - 12);
+  final hi = last ?? DateTime(now.year + 2);
+  // Mezzanotte UTC del giorno indicato (NON toUtc(): cambierebbe il giorno
+  // nei fusi orari positivi).
+  DateTime utcDay(DateTime d) => DateTime.utc(d.year, d.month, d.day);
+  final initialUtc = utcDay(initial ?? now);
+  final loUtc = utcDay(lo);
+  final hiUtc = utcDay(hi);
+  final todayUtc = utcDay(now);
+
+  DateTime? toLocal(DateTime utc) => DateTime(utc.year, utc.month, utc.day);
+
+  return showFDialog<DateTime>(
     context: context,
-    initialDate: initial ?? now,
-    firstDate: first ?? DateTime(now.year - 12),
-    lastDate: last ?? DateTime(now.year + 2),
-    locale: const Locale('it', 'IT'),
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      constraints: const BoxConstraints(minWidth: 320, maxWidth: 400),
+      builder: (context, style) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Scegli la data', style: style.titleTextStyle),
+          const SizedBox(height: 12),
+          FCalendar.grid(
+            control: FGridCalendarControl(
+              start: loUtc,
+              today: todayUtc,
+              initial: initialUtc,
+              end: hiUtc,
+            ),
+            selectionControl: FDateSelectionControl.liftedSingle(
+              value: initialUtc,
+              onChange: (_) {},
+            ),
+            onDayPress: (d) => Navigator.of(context).pop(toLocal(d)),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              SizedBox(
+                width: 130,
+                child: FButton(
+                  size: FButtonSizeVariant.sm,
+                  variant: FButtonVariant.ghost,
+                  onPress: () => Navigator.of(context).pop(),
+                  child: const Text('Annulla'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
   );
 }
 
@@ -731,12 +800,12 @@ void showToast(BuildContext context, String msg) {
   showFToast(
     context: context,
     title: Text(msg),
-    alignment: Alignment.bottomCenter,
+    alignment: FToastAlignment.bottomCenter,
     duration: const Duration(seconds: 3),
   );
 }
 
-/// Dialogo di conferma. Ritorna true se l'utente conferma.
+/// Dialogo di conferma (showFDialog di forui). Ritorna true se l'utente conferma.
 Future<bool> confirmDialog(
   BuildContext context, {
   required String title,
@@ -745,30 +814,42 @@ Future<bool> confirmDialog(
   String cancelLabel = 'Annulla',
   bool destructive = false,
 }) async {
-  final colors = context.theme.colors;
-  final result = await showDialog<bool>(
+  final result = await showFDialog<bool>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      backgroundColor: colors.card,
-      shape: RoundedRectangleBorder(
-        borderRadius: context.theme.style.borderRadius.lg,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      builder: (context, style) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: style.titleTextStyle),
+          const SizedBox(height: 10),
+          Text(message, style: style.bodyTextStyle),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: FButton(
+                  variant: FButtonVariant.outline,
+                  onPress: () => Navigator.of(context).pop(false),
+                  child: Text(cancelLabel),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FButton(
+                  variant: destructive
+                      ? FButtonVariant.destructive
+                      : FButtonVariant.primary,
+                  onPress: () => Navigator.of(context).pop(true),
+                  child: Text(confirmLabel),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      title: Text(title),
-      content: Text(message),
-      actions: [
-        FButton(
-          variant: FButtonVariant.outline,
-          onPress: () => Navigator.of(ctx).pop(false),
-          child: Text(cancelLabel),
-        ),
-        FButton(
-          variant: destructive
-              ? FButtonVariant.destructive
-              : FButtonVariant.primary,
-          onPress: () => Navigator.of(ctx).pop(true),
-          child: Text(confirmLabel),
-        ),
-      ],
     ),
   );
   return result ?? false;
@@ -782,35 +863,44 @@ Future<String?> promptDialog(
   String confirmLabel = 'Conferma',
 }) {
   final controller = TextEditingController();
-  final colors = context.theme.colors;
-  return showDialog<String>(
+  return showFDialog<String>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      backgroundColor: colors.card,
-      shape: RoundedRectangleBorder(
-        borderRadius: context.theme.style.borderRadius.lg,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      builder: (context, style) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: style.titleTextStyle),
+          const SizedBox(height: 12),
+          FTextField(
+            control: FTextFieldControl.managed(controller: controller),
+            maxLines: 8,
+            hint: hint,
+            autofocus: true,
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: FButton(
+                  variant: FButtonVariant.outline,
+                  onPress: () => Navigator.of(context).pop(),
+                  child: const Text('Annulla'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FButton(
+                  onPress: () => Navigator.of(context).pop(controller.text),
+                  child: Text(confirmLabel),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      title: Text(title),
-      content: SizedBox(
-        width: 480,
-        child: FTextField(
-          control: FTextFieldControl.managed(controller: controller),
-          maxLines: 8,
-          hint: hint,
-          autofocus: true,
-        ),
-      ),
-      actions: [
-        FButton(
-          variant: FButtonVariant.outline,
-          onPress: () => Navigator.of(ctx).pop(null),
-          child: const Text('Annulla'),
-        ),
-        FButton(
-          onPress: () => Navigator.of(ctx).pop(controller.text),
-          child: Text(confirmLabel),
-        ),
-      ],
     ),
   );
 }

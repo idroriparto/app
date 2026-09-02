@@ -56,9 +56,9 @@ class _AppShellState extends State<AppShell> {
     );
 
     if (wide) {
-      return Scaffold(
-        backgroundColor: colors.background,
-        body: Row(
+      return FScaffold(
+        childPad: false,
+        child: Row(
           children: [
             ColoredBox(
               color: colors.card,
@@ -91,7 +91,9 @@ class _AppShellState extends State<AppShell> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: context.theme.typography.body.xs
-                                        .copyWith(color: colors.mutedForeground),
+                                        .copyWith(
+                                          color: colors.mutedForeground,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -111,8 +113,9 @@ class _AppShellState extends State<AppShell> {
                         padding: const EdgeInsets.all(16),
                         child: Text(
                           'Dati solo su questo dispositivo',
-                          style: context.theme.typography.body.xs
-                              .copyWith(color: colors.mutedForeground),
+                          style: context.theme.typography.body.xs.copyWith(
+                            color: colors.mutedForeground,
+                          ),
                         ),
                       ),
                     ],
@@ -126,25 +129,29 @@ class _AppShellState extends State<AppShell> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      body: body,
-      bottomNavigationBar: ColoredBox(
-        color: colors.card,
-        child: SafeArea(
-          top: false,
-          child: FBottomNavigationBar(
-            index: index,
-            onChange: _go,
-            children: [
-              for (final d in _dest)
-                FBottomNavigationBarItem(
-                  icon: HugeIcon(icon: d.$1, size: 22),
-                  label: Text(d.$2),
-                ),
-            ],
+    return FScaffold(
+      childPad: false,
+      child: Column(
+        children: [
+          Expanded(child: body),
+          ColoredBox(
+            color: colors.card,
+            child: SafeArea(
+              top: false,
+              child: FBottomNavigationBar(
+                index: index,
+                onChange: _go,
+                children: [
+                  for (final d in _dest)
+                    FBottomNavigationBarItem(
+                      icon: HugeIcon(icon: d.$1, size: 22),
+                      label: Text(d.$2),
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -166,14 +173,16 @@ class _RailItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.theme.colors;
+    final radius = context.theme.style.borderRadius.md;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-      child: Material(
-        color: selected ? colors.muted : Colors.transparent,
-        borderRadius: context.theme.style.borderRadius.md,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: selected ? colors.muted : Colors.transparent,
+          borderRadius: radius,
+        ),
+        child: FTappable(
+          onPress: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
@@ -190,8 +199,7 @@ class _RailItem extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontWeight:
-                          selected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                       color: selected
                           ? colors.foreground
                           : colors.mutedForeground,

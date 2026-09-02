@@ -1,0 +1,25 @@
+display_name: IdroRiparto
+icon: linux/assets/idroriparto.png
+summary: Ripartizione consumi dell'acqua condominiale
+group: Utilities
+vendor: Francesco Vangi
+packager: Francesco Vangi
+packagerEmail: idroriparto@yahoo.com
+license: GPL 3.0
+url: https://github.com/idroriparto/idroriparto
+
+build_arch: aarch64, amd64
+
+requires:
+  - mpv
+
+keywords:
+  - acqua
+  - ripartizione
+
+generic_name: Ripartizione consumi dell'acqua condominiale
+
+categories:
+  - Utility
+
+startup_notify: true

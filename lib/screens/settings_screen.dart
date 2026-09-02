@@ -39,8 +39,9 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       Text(
                         c.nome,
-                        style: typo.body.lg
-                            .copyWith(fontWeight: FontWeight.w700),
+                        style: typo.body.lg.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       if (c.indirizzoCompleto.isNotEmpty)
                         Text(c.indirizzoCompleto),
@@ -113,13 +114,13 @@ class SettingsScreen extends StatelessWidget {
                           }
                         },
                       ),
-                      _Divider(),
+                      _TileDivider(),
                       _Tile(
                         icon: HugeIcons.strokeRoundedFileDownload,
                         title: 'Importa JSON',
                         onTap: () => _import(context),
                       ),
-                      _Divider(),
+                      _TileDivider(),
                       _Tile(
                         icon: HugeIcons.strokeRoundedSparkles,
                         title: 'Carica condominio di esempio',
@@ -138,7 +139,7 @@ class SettingsScreen extends StatelessWidget {
                           }
                         },
                       ),
-                      _Divider(),
+                      _TileDivider(),
                       _Tile(
                         icon: HugeIcons.strokeRoundedDelete02,
                         iconColor: colors.error,
@@ -168,8 +169,9 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       Text(
                         'IdroRiparto',
-                        style: typo.body.md
-                            .copyWith(fontWeight: FontWeight.w700),
+                        style: typo.body.md.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -181,14 +183,17 @@ class SettingsScreen extends StatelessWidget {
                         'salvo regolamento o delibera.\n\n'
                         'I dati restano sul dispositivo. Non è un parere legale: verifica '
                         'sempre il regolamento del condominio.',
-                        style: typo.body.xs
-                            .copyWith(color: colors.mutedForeground, height: 1.5),
+                        style: typo.body.xs.copyWith(
+                          color: colors.mutedForeground,
+                          height: 1.5,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Versione 2.0.0',
-                        style: typo.body.xs
-                            .copyWith(color: colors.mutedForeground),
+                        style: typo.body.xs.copyWith(
+                          color: colors.mutedForeground,
+                        ),
                       ),
                     ],
                   ),
@@ -239,8 +244,8 @@ class _ThemeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final selected = choice == groupValue;
     final colors = context.theme.colors;
-    return InkWell(
-      onTap: () => onChanged(choice),
+    return FTappable(
+      onPress: () => onChanged(choice),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
         child: Row(
@@ -288,8 +293,8 @@ class _Tile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.theme.colors;
     final typo = context.theme.typography;
-    return InkWell(
-      onTap: onTap,
+    return FTappable(
+      onPress: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Row(
@@ -304,12 +309,16 @@ class _Tile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   if (subtitle != null)
                     Text(
                       subtitle!,
-                      style: typo.body.xs
-                          .copyWith(color: colors.mutedForeground),
+                      style: typo.body.xs.copyWith(
+                        color: colors.mutedForeground,
+                      ),
                     ),
                 ],
               ),
@@ -321,10 +330,11 @@ class _Tile extends StatelessWidget {
   }
 }
 
-class _Divider extends StatelessWidget {
+class _TileDivider extends StatelessWidget {
+  const _TileDivider({super.key});
+
   @override
-  Widget build(BuildContext context) =>
-      Divider(height: 1, color: context.theme.colors.border);
+  Widget build(BuildContext context) => const FDivider();
 }
 
 class CondoFormScreen extends StatefulWidget {
@@ -385,14 +395,13 @@ class _CondoFormScreenState extends State<CondoFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.theme.colors;
-    return Scaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(
-        backgroundColor: colors.background,
+    return FScaffold(
+      childPad: false,
+      header: FHeader.nested(
+        prefixes: [backAction(context)],
         title: const Text('Anagrafica condominio'),
       ),
-      body: ListView(
+      child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
           MaxWidth(
@@ -405,7 +414,9 @@ class _CondoFormScreenState extends State<CondoFormScreen> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: ItField(label: 'CAP', controller: cap)),
+                    Expanded(
+                      child: ItField(label: 'CAP', controller: cap),
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       flex: 2,
@@ -418,10 +429,7 @@ class _CondoFormScreenState extends State<CondoFormScreen> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                ItField(
-                  label: 'Codice fiscale / P. IVA',
-                  controller: cf,
-                ),
+                ItField(label: 'Codice fiscale / P. IVA', controller: cf),
                 const SizedBox(height: 10),
                 ItField(label: 'Amministratore', controller: ammin),
                 const SizedBox(height: 10),
@@ -437,9 +445,7 @@ class _CondoFormScreenState extends State<CondoFormScreen> {
                     value: metodo,
                     onChange: (v) => setState(() => metodo = v ?? metodo),
                   ),
-                  items: {
-                    for (final m in MetodoRiparto.values) m.titolo: m,
-                  },
+                  items: {for (final m in MetodoRiparto.values) m.titolo: m},
                 ),
                 const SizedBox(height: 10),
                 FSelect<CriterioQuota>(
@@ -448,9 +454,7 @@ class _CondoFormScreenState extends State<CondoFormScreen> {
                     value: fissa,
                     onChange: (v) => setState(() => fissa = v ?? fissa),
                   ),
-                  items: {
-                    for (final m in CriterioQuota.values) m.label: m,
-                  },
+                  items: {for (final m in CriterioQuota.values) m.label: m},
                 ),
                 const SizedBox(height: 10),
                 FSelect<CriterioQuota>(
@@ -459,9 +463,7 @@ class _CondoFormScreenState extends State<CondoFormScreen> {
                     value: comune,
                     onChange: (v) => setState(() => comune = v ?? comune),
                   ),
-                  items: {
-                    for (final m in CriterioQuota.values) m.label: m,
-                  },
+                  items: {for (final m in CriterioQuota.values) m.label: m},
                 ),
                 const SizedBox(height: 22),
                 SizedBox(
@@ -476,8 +478,9 @@ class _CondoFormScreenState extends State<CondoFormScreen> {
                           cap: cap.text.trim(),
                           citta: citta.text.trim(),
                           provincia: provincia.text.trim(),
-                          codiceFiscale:
-                              cf.text.trim().isEmpty ? null : cf.text.trim(),
+                          codiceFiscale: cf.text.trim().isEmpty
+                              ? null
+                              : cf.text.trim(),
                           amministratore: ammin.text.trim(),
                           fornitore: fornitore.text.trim(),
                           codiceUtenza: utenza.text.trim().isEmpty

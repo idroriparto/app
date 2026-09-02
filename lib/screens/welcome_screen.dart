@@ -15,7 +15,7 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  final _form = GlobalKey<FormState>();
+  final _nomeKey = GlobalKey<FormFieldState<String>>();
   final _nome = TextEditingController();
   final _indirizzo = TextEditingController();
   final _citta = TextEditingController();
@@ -41,7 +41,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Future<void> _create() async {
-    if (!_form.currentState!.validate()) return;
+    if (!(_nomeKey.currentState?.validate() ?? false)) return;
     setState(() => _busy = true);
     final c = Condominio(
       id: newId('cnd'),
@@ -61,7 +61,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final wide = MediaQuery.sizeOf(context).width >= 900;
     final hero = _HeroPanel(onDemo: _busy ? null : _demo, fill: wide);
     final form = _FormPanel(
-      form: _form,
+      nomeKey: _nomeKey,
       nome: _nome,
       indirizzo: _indirizzo,
       citta: _citta,
@@ -75,13 +75,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
 
     if (wide) {
-      return Scaffold(
-        body: Row(
-          children: [Expanded(child: hero), Expanded(child: form)],
+      return FScaffold(
+        childPad: false,
+        child: Row(
+          children: [
+            Expanded(child: hero),
+            Expanded(child: form),
+          ],
         ),
       );
     }
-    return Scaffold(body: ListView(children: [hero, form]));
+    return FScaffold(childPad: false, child: ListView(children: [hero, form]));
   }
 }
 
@@ -179,7 +183,7 @@ class _Tag extends StatelessWidget {
 
 class _FormPanel extends StatelessWidget {
   const _FormPanel({
-    required this.form,
+    required this.nomeKey,
     required this.nome,
     required this.indirizzo,
     required this.citta,
@@ -192,7 +196,7 @@ class _FormPanel extends StatelessWidget {
     required this.onDemo,
   });
 
-  final GlobalKey<FormState> form;
+  final GlobalKey<FormFieldState<String>> nomeKey;
   final TextEditingController nome;
   final TextEditingController indirizzo;
   final TextEditingController citta;
@@ -213,83 +217,85 @@ class _FormPanel extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 480),
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 32, 24, 36),
-            child: Form(
-              key: form,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Crea il tuo condominio',
-                    style: context.theme.typography.display.sm
-                        .copyWith(fontWeight: FontWeight.w700),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Crea il tuo condominio',
+                  style: context.theme.typography.display.sm.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Potrai aggiungere le unità e le letture subito dopo. '
-                    'I dati restano solo su questo dispositivo.',
-                    style: context.theme.typography.body.sm
-                        .copyWith(color: colors.mutedForeground),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Potrai aggiungere le unità e le letture subito dopo. '
+                  'I dati restano solo su questo dispositivo.',
+                  style: context.theme.typography.body.sm.copyWith(
+                    color: colors.mutedForeground,
                   ),
-                  const SizedBox(height: 24),
-                  ItField(
-                    label: 'Nome del condominio',
-                    controller: nome,
-                    hint: 'es. Palazzo Solferino',
-                    autofocus: true,
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Obbligatorio' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  ItField(label: 'Indirizzo', controller: indirizzo),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(child: ItField(label: 'CAP', controller: cap)),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: ItField(label: 'Città', controller: citta),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ItField(
-                    label: 'Amministratore (facoltativo)',
-                    controller: ammin,
-                  ),
-                  const SizedBox(height: 20),
-                  const SectionLabel('Criterio di default'),
-                  for (final m in MetodoRiparto.values)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _MethodTile(
-                        method: m,
-                        selected: metodo == m,
-                        onTap: () {
-                          AppMotion.tap();
-                          onMetodo(m);
-                        },
-                      ),
+                ),
+                const SizedBox(height: 24),
+                ItField(
+                  label: 'Nome del condominio',
+                  controller: nome,
+                  formFieldKey: nomeKey,
+                  hint: 'es. Palazzo Solferino',
+                  autofocus: true,
+                  validator: (v) =>
+                      (v == null || v.trim().isEmpty) ? 'Obbligatorio' : null,
+                ),
+                const SizedBox(height: 12),
+                ItField(label: 'Indirizzo', controller: indirizzo),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ItField(label: 'CAP', controller: cap),
                     ),
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FButton(
-                      onPress: busy ? null : onCreate,
-                      child: Text(busy ? 'Un attimo…' : 'Inizia'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: ItField(label: 'Città', controller: citta),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ItField(
+                  label: 'Amministratore (facoltativo)',
+                  controller: ammin,
+                ),
+                const SizedBox(height: 20),
+                const SectionLabel('Criterio di default'),
+                for (final m in MetodoRiparto.values)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _MethodTile(
+                      method: m,
+                      selected: metodo == m,
+                      onTap: () {
+                        AppMotion.tap();
+                        onMetodo(m);
+                      },
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FButton(
-                      variant: FButtonVariant.outline,
-                      onPress: busy ? null : onDemo,
-                      child: const Text('Meglio vedere un esempio'),
-                    ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: FButton(
+                    onPress: busy ? null : onCreate,
+                    child: Text(busy ? 'Un attimo…' : 'Inizia'),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: FButton(
+                    variant: FButtonVariant.outline,
+                    onPress: busy ? null : onDemo,
+                    child: const Text('Meglio vedere un esempio'),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -344,8 +350,10 @@ class _MethodTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   method.descrizione,
-                  style: context.theme.typography.body.xs
-                      .copyWith(color: colors.mutedForeground, height: 1.4),
+                  style: context.theme.typography.body.xs.copyWith(
+                    color: colors.mutedForeground,
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),

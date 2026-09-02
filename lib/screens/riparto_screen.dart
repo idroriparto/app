@@ -24,35 +24,40 @@ class RipartoScreen extends StatelessWidget {
       if (e.id == bollettaId) b = e;
     }
     if (b == null) {
-      return const Scaffold(body: Center(child: Text('Bolletta non trovata')));
+      return FScaffold(
+        childPad: false,
+        header: FHeader.nested(
+          prefixes: [backAction(context)],
+          title: const Text('Prospetto'),
+        ),
+        child: const Center(child: Text('Bolletta non trovata')),
+      );
     }
     final bolletta = b;
-    final rip = store.ripartoDi(bolletta.id) ??
+    final rip =
+        store.ripartoDi(bolletta.id) ??
         RipartoEngine.calcola(bolletta: bolletta, unita: store.unita);
     final condo = store.condominio!;
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(
-        backgroundColor: colors.background,
+    return FScaffold(
+      childPad: false,
+      header: FHeader.nested(
+        prefixes: [backAction(context)],
         title: const Text('Prospetto di riparto'),
-        actions: [
-          IconButton(
-            tooltip: 'Modifica bolletta',
-            color: colors.foreground,
-            onPressed: () => pushApp(
-              context,
-              BollettaFormScreen(esistente: bolletta),
-            ),
-            icon: const HugeIcon(
+        suffixes: [
+          FHeaderAction(
+            icon: HugeIcon(
               icon: HugeIcons.strokeRoundedEdit02,
-              size: 22,
-              color: null,
+              size: 20,
+              color: colors.foreground,
             ),
+            semanticsLabel: 'Modifica bolletta',
+            onPress: () =>
+                pushApp(context, BollettaFormScreen(esistente: bolletta)),
           ),
         ],
       ),
-      body: ListView(
+      child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
           MaxWidth(
@@ -61,8 +66,9 @@ class RipartoScreen extends StatelessWidget {
               children: [
                 Text(
                   periodLabel(bolletta.periodoDal, bolletta.periodoAl),
-                  style: context.theme.typography.display.xl2
-                      .copyWith(fontWeight: FontWeight.w700),
+                  style: context.theme.typography.display.xl2.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Wrap(
@@ -108,8 +114,10 @@ class RipartoScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   rip.noteCalcolo,
-                  style: context.theme.typography.body.xs
-                      .copyWith(color: colors.mutedForeground, height: 1.4),
+                  style: context.theme.typography.body.xs.copyWith(
+                    color: colors.mutedForeground,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 18),
                 AppCard(child: UnitShareChart(righe: rip.righe)),
@@ -128,7 +136,7 @@ class RipartoScreen extends StatelessWidget {
                       _tot(context, 'Consumi individuali', rip.totaleConsumo),
                       _tot(context, 'Parti comuni e perdite', rip.totaleComune),
                       _tot(context, 'IVA e altro', rip.totaleExtra),
-                      Divider(color: colors.border),
+                      const FDivider(),
                       _tot(context, 'Totale', rip.totaleGenerale, bold: true),
                     ],
                   ),
@@ -192,8 +200,7 @@ class RipartoScreen extends StatelessWidget {
                       onPress: () => showFSheet<void>(
                         context: context,
                         side: FLayout.btt,
-                        builder: (_) =>
-                            _ConfrontoSheet(bolletta: bolletta),
+                        builder: (_) => _ConfrontoSheet(bolletta: bolletta),
                       ),
                       child: const Text('Confronta metodi'),
                     ),
@@ -206,8 +213,9 @@ class RipartoScreen extends StatelessWidget {
                           color: null,
                         ),
                         onPress: () async {
-                          await StoreScope.read(context)
-                              .chiudiBolletta(bolletta.id);
+                          await StoreScope.read(
+                            context,
+                          ).chiudiBolletta(bolletta.id);
                           if (context.mounted) {
                             showToast(context, 'Periodo chiuso');
                           }
@@ -221,8 +229,10 @@ class RipartoScreen extends StatelessWidget {
                   'In presenza di sottocontatori si privilegia il consumo effettivo. '
                   'In mancanza, art. 1123 c.c. (millesimi), salvo regolamento o delibera. '
                   'IdroRiparto è uno strumento di calcolo, non sostituisce la consulenza dell’amministratore.',
-                  style: context.theme.typography.body.xs
-                      .copyWith(color: colors.mutedForeground, height: 1.4),
+                  style: context.theme.typography.body.xs.copyWith(
+                    color: colors.mutedForeground,
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),
@@ -284,8 +294,9 @@ class _RigaCard extends StatelessWidget {
                     ),
                     Text(
                       riga.proprietario,
-                      style: context.theme.typography.body.xs
-                          .copyWith(color: colors.mutedForeground),
+                      style: context.theme.typography.body.xs.copyWith(
+                        color: colors.mutedForeground,
+                      ),
                     ),
                   ],
                 ),
@@ -323,7 +334,10 @@ class _RigaCard extends StatelessWidget {
             color: context.theme.colors.mutedForeground,
           ),
         ),
-        Text(v, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        Text(
+          v,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+        ),
       ],
     );
   }
@@ -337,10 +351,7 @@ class _ConfrontoSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = StoreScope.of(context);
     final colors = context.theme.colors;
-    final map = RipartoEngine.confronta(
-      bolletta: bolletta,
-      unita: store.unita,
-    );
+    final map = RipartoEngine.confronta(bolletta: bolletta, unita: store.unita);
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.85,
@@ -364,74 +375,160 @@ class _ConfrontoSheet extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'Stesso importo, cinque criteri',
-                style: context.theme.typography.display.sm
-                    .copyWith(fontWeight: FontWeight.w700),
+                style: context.theme.typography.display.sm.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
                 'Utile in assemblea per mostrare l’effetto del passaggio ai contatori, ai millesimi o alle teste.',
-                style: context.theme.typography.body.xs
-                    .copyWith(color: colors.mutedForeground),
+                style: context.theme.typography.body.xs.copyWith(
+                  color: colors.mutedForeground,
+                ),
               ),
               const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  headingTextStyle: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                  ),
-                  dataTextStyle: const TextStyle(fontSize: 12),
-                  columns: [
-                    const DataColumn(label: Text('Int.')),
-                    for (final m in MetodoRiparto.values)
-                      DataColumn(
-                        label: Text(m.label),
-                        numeric: true,
-                      ),
-                  ],
-                  rows: [
-                    for (final u in store.unita)
-                      DataRow(
-                        cells: [
-                          DataCell(Text(u.interno)),
-                          for (final m in MetodoRiparto.values)
-                            DataCell(
-                              Text(
-                                euro(
-                                  map[m]!.righe
-                                      .firstWhere((r) => r.unitaId == u.id)
-                                      .totale,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    DataRow(
-                      cells: [
-                        const DataCell(
-                          Text(
-                            'TOT',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        for (final m in MetodoRiparto.values)
-                          DataCell(
-                            Text(
-                              euro(map[m]!.totaleGenerale),
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
+                child: _MetodiTable(store: store, map: map),
               ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+/// Tabella "stesso importo, cinque criteri": colonna unità + una colonna per
+/// metodo di riparto. Sostituisce la DataTable Material con righe Forui-style
+/// (testo compatto, importi allineati a destra, righe alternate).
+class _MetodiTable extends StatelessWidget {
+  const _MetodiTable({required this.store, required this.map});
+
+  final AppStore store;
+  final Map<MetodoRiparto, RisultatoRiparto> map;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.theme.colors;
+    final radius = context.theme.style.borderRadius.md;
+    final labelStyle = TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+      color: colors.mutedForeground,
+    );
+    final monoStyle = const TextStyle(
+      fontSize: 12,
+      fontFeatures: [FontFeature.tabularFigures()],
+    );
+    // Larghezza totale fissa: dentro uno scroll orizzontale la larghezza è
+    // illimitata e i divisori (che non hanno larghezza propria) collasserebbero.
+    final totalWidth = 64.0 + MetodoRiparto.values.length * 104.0;
+
+    Widget cell(String text, {bool bold = false, bool header = false}) {
+      return SizedBox(
+        width: 104,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+            style: header
+                ? labelStyle
+                : monoStyle.copyWith(
+                    fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
+                  ),
+          ),
+        ),
+      );
+    }
+
+    Widget name(String text, {bool header = false, bool bold = false}) {
+      return SizedBox(
+        width: 64,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: header
+                ? labelStyle
+                : monoStyle.copyWith(
+                    fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
+                  ),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: totalWidth,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: colors.border),
+          borderRadius: radius,
+        ),
+        child: ClipRRect(
+          borderRadius: radius,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    name('Int.', header: true),
+                    for (final m in MetodoRiparto.values)
+                      cell(m.label, header: true),
+                  ],
+                ),
+              ),
+              const FDivider(),
+              for (var i = 0; i < store.unita.length; i++) ...[
+                DecoratedBox(
+                  color: i.isEven ? colors.background : colors.card,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        name(store.unita[i].interno),
+                        for (final m in MetodoRiparto.values)
+                          cell(
+                            euro(
+                              map[m]!.righe
+                                  .firstWhere(
+                                    (r) => r.unitaId == store.unita[i].id,
+                                  )
+                                  .totale,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (i < store.unita.length - 1) const FDivider(),
+              ],
+              const FDivider(),
+              DecoratedBox(
+                color: colors.muted,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      name('TOT', bold: true),
+                      for (final m in MetodoRiparto.values)
+                        cell(euro(map[m]!.totaleGenerale), bold: true),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

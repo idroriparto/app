@@ -20,117 +20,125 @@ class BolletteListScreen extends StatelessWidget {
     final list = store.bollette;
     final colors = context.theme.colors;
     final typo = context.theme.typography;
-    return Scaffold(
-      backgroundColor: colors.background,
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: colors.primary,
-        foregroundColor: colors.primaryForeground,
-        elevation: 0,
-        onPressed: () => pushApp(context, const BollettaFormScreen()),
-        icon: HugeIcon(
-          icon: HugeIcons.strokeRoundedAdd01,
-          size: 20,
-          color: colors.primaryForeground,
-        ),
-        label: Text(
-          'Nuova bolletta',
-          style: TextStyle(color: colors.primaryForeground),
-        ),
-      ),
-      body: SafeArea(
-        child: list.isEmpty
-            ? EmptyState(
-                icon: HugeIcons.strokeRoundedReceiptText,
-                title: 'Nessuna bolletta',
-                subtitle:
-                    'Inserisci gli importi del gestore (quota fissa, acquedotto, fognatura, depurazione, IVA) e calcola il riparto.',
-                actionLabel: 'Registra una bolletta',
-                onAction: () =>
-                    pushApp(context, const BollettaFormScreen()),
-              )
-            : ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                children: [
-                  MaxWidth(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Bollette e periodi',
-                          style: typo.display.sm
-                              .copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Ogni periodo ha i suoi importi, i consumi e un prospetto di riparto.',
-                          style: typo.body.sm
-                              .copyWith(color: colors.mutedForeground),
-                        ),
-                        const SizedBox(height: 16),
-                        for (final b in list)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: AppCard(
-                              onTap: () {
-                                final rip = store.ripartoDi(b.id);
-                                if (rip == null) {
-                                  pushApp(
-                                    context,
-                                    BollettaFormScreen(esistente: b),
-                                  );
-                                } else {
-                                  pushApp(
-                                    context,
-                                    RipartoScreen(bollettaId: b.id),
-                                  );
-                                }
-                              },
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          periodLabel(b.periodoDal, b.periodoAl),
-                                          style: typo.body.lg
-                                              .copyWith(fontWeight: FontWeight.w700),
-                                        ),
-                                      ),
-                                      StatoChip(b.stato),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    [
-                                      if (b.numero.isNotEmpty) b.numero,
-                                      if (b.fornitore.isNotEmpty) b.fornitore,
-                                      b.metodo.label,
-                                    ].join(' · '),
-                                    style: typo.body.xs
-                                        .copyWith(color: colors.mutedForeground),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    children: [
-                                      MoneyText(b.totale),
-                                      const Spacer(),
-                                      Text(
-                                        mc(b.mcFatturati),
-                                        style: typo.body.xs
-                                            .copyWith(color: colors.mutedForeground),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+    return FScaffold(
+      childPad: false,
+      child: Stack(
+        children: [
+          SafeArea(
+            child: list.isEmpty
+                ? EmptyState(
+                    icon: HugeIcons.strokeRoundedReceiptText,
+                    title: 'Nessuna bolletta',
+                    subtitle:
+                        'Inserisci gli importi del gestore (quota fissa, acquedotto, fognatura, depurazione, IVA) e calcola il riparto.',
+                    actionLabel: 'Registra una bolletta',
+                    onAction: () =>
+                        pushApp(context, const BollettaFormScreen()),
+                  )
+                : ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 108),
+                    children: [
+                      MaxWidth(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Bollette e periodi',
+                              style: typo.display.sm.copyWith(
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                          ),
-                      ],
-                    ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Ogni periodo ha i suoi importi, i consumi e un prospetto di riparto.',
+                              style: typo.body.sm.copyWith(
+                                color: colors.mutedForeground,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            for (final b in list)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: AppCard(
+                                  onTap: () {
+                                    final rip = store.ripartoDi(b.id);
+                                    if (rip == null) {
+                                      pushApp(
+                                        context,
+                                        BollettaFormScreen(esistente: b),
+                                      );
+                                    } else {
+                                      pushApp(
+                                        context,
+                                        RipartoScreen(bollettaId: b.id),
+                                      );
+                                    }
+                                  },
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              periodLabel(
+                                                b.periodoDal,
+                                                b.periodoAl,
+                                              ),
+                                              style: typo.body.lg.copyWith(
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                          StatoChip(b.stato),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        [
+                                          if (b.numero.isNotEmpty) b.numero,
+                                          if (b.fornitore.isNotEmpty)
+                                            b.fornitore,
+                                          b.metodo.label,
+                                        ].join(' · '),
+                                        style: typo.body.xs.copyWith(
+                                          color: colors.mutedForeground,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          MoneyText(b.totale),
+                                          const Spacer(),
+                                          Text(
+                                            mc(b.mcFatturati),
+                                            style: typo.body.xs.copyWith(
+                                              color: colors.mutedForeground,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+          ),
+          Positioned(
+            right: 24,
+            bottom: 28,
+            child: FabAction(
+              icon: HugeIcons.strokeRoundedAdd01,
+              label: 'Nuova bolletta',
+              onPress: () => pushApp(context, const BollettaFormScreen()),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -303,15 +311,15 @@ class _BollettaFormScreenState extends State<BollettaFormScreen> {
       bolletta: _build(store),
       unita: store.unita,
     );
-    return Scaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(
-        backgroundColor: colors.background,
-        title: Text(widget.esistente == null
-            ? 'Nuova bolletta'
-            : 'Modifica bolletta'),
+    return FScaffold(
+      childPad: false,
+      header: FHeader.nested(
+        prefixes: [backAction(context)],
+        title: Text(
+          widget.esistente == null ? 'Nuova bolletta' : 'Modifica bolletta',
+        ),
       ),
-      body: ListView(
+      child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
           MaxWidth(
@@ -375,8 +383,10 @@ class _BollettaFormScreenState extends State<BollettaFormScreen> {
                 const SizedBox(height: 6),
                 Text(
                   metodo.descrizione,
-                  style: typo.body.xs
-                      .copyWith(color: colors.mutedForeground, height: 1.4),
+                  style: typo.body.xs.copyWith(
+                    color: colors.mutedForeground,
+                    height: 1.4,
+                  ),
                 ),
                 if (metodo == MetodoRiparto.misto) ...[
                   const SizedBox(height: 12),
@@ -386,8 +396,7 @@ class _BollettaFormScreenState extends State<BollettaFormScreen> {
                         child: _CritSelect(
                           label: 'Quota fissa',
                           value: criterioFissa,
-                          onChanged: (v) =>
-                              setState(() => criterioFissa = v),
+                          onChanged: (v) => setState(() => criterioFissa = v),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -395,8 +404,7 @@ class _BollettaFormScreenState extends State<BollettaFormScreen> {
                         child: _CritSelect(
                           label: 'Parti comuni',
                           value: criterioComune,
-                          onChanged: (v) =>
-                              setState(() => criterioComune = v),
+                          onChanged: (v) => setState(() => criterioComune = v),
                         ),
                       ),
                     ],
@@ -411,10 +419,10 @@ class _BollettaFormScreenState extends State<BollettaFormScreen> {
                     onPress: () {
                       setState(() {
                         for (final u in store.unita) {
-                          final c =
-                              store.consumoNelPeriodo(u.id, dal, al);
-                          consumi[u.id]!.text =
-                              c.consumo == 0 ? '' : _fmt(c.consumo);
+                          final c = store.consumoNelPeriodo(u.id, dal, al);
+                          consumi[u.id]!.text = c.consumo == 0
+                              ? ''
+                              : _fmt(c.consumo);
                         }
                       });
                     },
@@ -437,8 +445,9 @@ class _BollettaFormScreenState extends State<BollettaFormScreen> {
                           child: Text(
                             u.proprietario,
                             overflow: TextOverflow.ellipsis,
-                            style: typo.body.xs
-                                .copyWith(color: colors.mutedForeground),
+                            style: typo.body.xs.copyWith(
+                              color: colors.mutedForeground,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -450,10 +459,9 @@ class _BollettaFormScreenState extends State<BollettaFormScreen> {
                               onChange: (_) => setState(() {}),
                             ),
                             textAlign: TextAlign.right,
-                            keyboardType:
-                                const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
                             hint: '0,000',
                           ),
                         ),
@@ -493,8 +501,7 @@ class _BollettaFormScreenState extends State<BollettaFormScreen> {
     );
   }
 
-  Widget _money(String label, TextEditingController c,
-      {String suffix = '€'}) {
+  Widget _money(String label, TextEditingController c, {String suffix = '€'}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: ItField(
@@ -575,8 +582,9 @@ class _DateTile extends StatelessWidget {
         children: [
           Text(
             label,
-            style: context.theme.typography.body.xs
-                .copyWith(color: colors.mutedForeground),
+            style: context.theme.typography.body.xs.copyWith(
+              color: colors.mutedForeground,
+            ),
           ),
           Text(
             dateShort.format(value),
@@ -608,9 +616,7 @@ class _CritSelect extends StatelessWidget {
           if (v != null) onChanged(v);
         },
       ),
-      items: {
-        for (final c in CriterioQuota.values) c.label: c,
-      },
+      items: {for (final c in CriterioQuota.values) c.label: c},
     );
   }
 }

@@ -41,8 +41,9 @@ class DashboardScreen extends StatelessWidget {
                       Text(
                         greetingFor(DateTime.now()),
                         style: typo.body.xs.copyWith(
-                          color: colors.primaryForeground
-                              .withValues(alpha: 0.85),
+                          color: colors.primaryForeground.withValues(
+                            alpha: 0.85,
+                          ),
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
                         ),
@@ -61,8 +62,9 @@ class DashboardScreen extends StatelessWidget {
                         Text(
                           c.indirizzoCompleto,
                           style: typo.body.xs.copyWith(
-                            color: colors.primaryForeground
-                                .withValues(alpha: 0.88),
+                            color: colors.primaryForeground.withValues(
+                              alpha: 0.88,
+                            ),
                           ),
                         ),
                       ],
@@ -153,10 +155,8 @@ class DashboardScreen extends StatelessWidget {
                       ),
                     ),
                     AppCard(
-                      onTap: () => pushApp(
-                        context,
-                        RipartoScreen(bollettaId: last.id),
-                      ),
+                      onTap: () =>
+                          pushApp(context, RipartoScreen(bollettaId: last.id)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -167,8 +167,9 @@ class DashboardScreen extends StatelessWidget {
                                   periodLabel(last.periodoDal, last.periodoAl),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: typo.body.lg
-                                      .copyWith(fontWeight: FontWeight.w700),
+                                  style: typo.body.lg.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -180,18 +181,16 @@ class DashboardScreen extends StatelessWidget {
                             '${last.metodo.titolo} · ${last.fornitore.isEmpty ? c.fornitore : last.fornitore}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: typo.body.xs
-                                .copyWith(color: colors.mutedForeground),
+                            style: typo.body.xs.copyWith(
+                              color: colors.mutedForeground,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           ShareBar(
                             parts: [
                               for (final r in rip.righe)
                                 (
-                                  color: UnitColor.forUnit(
-                                    context,
-                                    r.unitaId,
-                                  ),
+                                  color: UnitColor.forUnit(context, r.unitaId),
                                   value: r.totale,
                                 ),
                             ],
@@ -274,10 +273,7 @@ class DashboardScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(k, style: typoXs(context, colors.mutedForeground)),
-        Text(
-          v,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
+        Text(v, style: const TextStyle(fontWeight: FontWeight.w700)),
       ],
     );
   }
@@ -303,10 +299,7 @@ class _Quick extends StatelessWidget {
         size: 18,
         color: colors.primaryForeground,
       ),
-      child: Text(
-        label,
-        style: TextStyle(color: colors.primaryForeground),
-      ),
+      child: Text(label, style: TextStyle(color: colors.primaryForeground)),
     );
   }
 }
@@ -349,8 +342,10 @@ class _How extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 d,
-                style: context.theme.typography.body.xs
-                    .copyWith(color: colors.mutedForeground, height: 1.4),
+                style: context.theme.typography.body.xs.copyWith(
+                  color: colors.mutedForeground,
+                  height: 1.4,
+                ),
               ),
             ],
           ),
@@ -366,8 +361,9 @@ class _BillsBars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxV =
-        bollette.map((b) => b.totale).fold<double>(0, (a, b) => a > b ? a : b);
+    final maxV = bollette
+        .map((b) => b.totale)
+        .fold<double>(0, (a, b) => a > b ? a : b);
     final colors = context.theme.colors;
     return SizedBox(
       height: 188,
@@ -420,8 +416,9 @@ class _BillsBars extends StatelessWidget {
                       DateFormatMini.fmt(bollette[i].periodoAl),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: context.theme.typography.body.xs
-                          .copyWith(color: colors.mutedForeground),
+                      style: context.theme.typography.body.xs.copyWith(
+                        color: colors.mutedForeground,
+                      ),
                     ),
                   ],
                 ),
@@ -436,8 +433,18 @@ class _BillsBars extends StatelessWidget {
 class DateFormatMini {
   static String fmt(DateTime d) {
     const m = [
-      'gen', 'feb', 'mar', 'apr', 'mag', 'giu',
-      'lug', 'ago', 'set', 'ott', 'nov', 'dic',
+      'gen',
+      'feb',
+      'mar',
+      'apr',
+      'mag',
+      'giu',
+      'lug',
+      'ago',
+      'set',
+      'ott',
+      'nov',
+      'dic',
     ];
     return '${m[d.month - 1]} ${d.year % 100}';
   }

@@ -108,7 +108,7 @@ class _HeroPanel extends StatelessWidget {
             if (fill) const Spacer() else const SizedBox(height: 28),
             Text(
               'L’acqua del condominio,\nripagata con chiarezza.',
-              style: context.theme.typography.display.sm.copyWith(
+              style: context.theme.typography.display.xl2.copyWith(
                 color: colors.primaryForeground,
                 fontWeight: FontWeight.w700,
                 height: 1.15,
@@ -222,7 +222,7 @@ class _FormPanel extends StatelessWidget {
               children: [
                 Text(
                   'Crea il tuo condominio',
-                  style: context.theme.typography.display.sm.copyWith(
+                  style: context.theme.typography.display.lg.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),

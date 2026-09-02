@@ -44,7 +44,7 @@ class UnitaListScreen extends StatelessWidget {
                           children: [
                             Text(
                               'Unità immobiliari',
-                              style: typo.display.sm.copyWith(
+                              style: typo.display.md.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

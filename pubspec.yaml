@@ -1,7 +1,7 @@
 name: idroriparto
 description: Ripartizione consumi e spese dell'acqua condominiale.
 publish_to: "none"
-version: 2.0.0+2
+version: 1.0.0+2
 
 environment:
   sdk: ^3.12.2
@@ -39,7 +39,7 @@ flutter_launcher_icons:
   web:
     generate: true
     image_path: assets/brand/logo_source.png
-    background_color: "#2264E2"
+    background_color: "#FFFFFF"
     theme_color: "#2264E2"
 
 flutter:

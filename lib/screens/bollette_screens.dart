@@ -44,7 +44,7 @@ class BolletteListScreen extends StatelessWidget {
                           children: [
                             Text(
                               'Bollette e periodi',
-                              style: typo.display.sm.copyWith(
+                              style: typo.display.md.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

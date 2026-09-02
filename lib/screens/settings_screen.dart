@@ -29,7 +29,7 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 Text(
                   'Impostazioni',
-                  style: typo.display.sm.copyWith(fontWeight: FontWeight.w700),
+                  style: typo.display.md.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 18),
                 const SectionLabel('Condominio'),
@@ -88,78 +88,78 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 const SectionLabel('Archivio'),
-                AppCard(
-                  padding: EdgeInsets.zero,
-                  child: Column(
-                    children: [
-                      _Tile(
-                        icon: HugeIcons.strokeRoundedFileExport,
-                        title: 'Esporta JSON',
-                        subtitle: 'Copia l’intero archivio negli appunti',
-                        onTap: () async {
-                          await Clipboard.setData(
-                            ClipboardData(
-                              text: AppSnapshot(
-                                condominio: store.condominio,
-                                unita: store.unita,
-                                letture: store.letture,
-                                bollette: store.bollette,
-                                riparti: store.riparti,
-                                theme: store.themeChoice,
-                              ).toPrettyJson(),
-                            ),
-                          );
-                          if (context.mounted) {
-                            showToast(context, 'Archivio copiato');
-                          }
-                        },
+                // FTileGroup: gruppo di tile ufficiale forui, con sfondo
+                // card, bordo e divisori inset allineati automaticamente
+                // (le tile custom + FDivider apparivano "storti").
+                FTileGroup(
+                  children: [
+                    FTile(
+                      prefix: const HugeIcon(icon: HugeIcons.strokeRoundedFileExport),
+                      title: const Text('Esporta JSON'),
+                      subtitle: const Text(
+                        'Copia l’intero archivio negli appunti',
                       ),
-                      _TileDivider(),
-                      _Tile(
-                        icon: HugeIcons.strokeRoundedFileDownload,
-                        title: 'Importa JSON',
-                        onTap: () => _import(context),
+                      onPress: () async {
+                        await Clipboard.setData(
+                          ClipboardData(
+                            text: AppSnapshot(
+                              condominio: store.condominio,
+                              unita: store.unita,
+                              letture: store.letture,
+                              bollette: store.bollette,
+                              riparti: store.riparti,
+                              theme: store.themeChoice,
+                            ).toPrettyJson(),
+                          ),
+                        );
+                        if (context.mounted) {
+                          showToast(context, 'Archivio copiato');
+                        }
+                      },
+                    ),
+                    FTile(
+                      prefix: const HugeIcon(icon: HugeIcons.strokeRoundedFileDownload),
+                      title: const Text('Importa JSON'),
+                      onPress: () => _import(context),
+                    ),
+                    FTile(
+                      prefix: const HugeIcon(icon: HugeIcons.strokeRoundedSparkles),
+                      title: const Text('Carica condominio di esempio'),
+                      subtitle: const Text(
+                        'Palazzo Solferino, Milano — sostituisce i dati attuali',
                       ),
-                      _TileDivider(),
-                      _Tile(
-                        icon: HugeIcons.strokeRoundedSparkles,
-                        title: 'Carica condominio di esempio',
-                        subtitle:
-                            'Palazzo Solferino, Milano — sostituisce i dati attuali',
-                        onTap: () async {
-                          final ok = await confirmDialog(
-                            context,
-                            title: 'Caricare l’esempio?',
-                            message:
-                                'I dati attuali saranno sostituiti con l’esempio di Milano.',
-                            confirmLabel: 'Carica esempio',
-                          );
-                          if (ok && context.mounted) {
-                            await StoreScope.read(context).loadDemo();
-                          }
-                        },
-                      ),
-                      _TileDivider(),
-                      _Tile(
-                        icon: HugeIcons.strokeRoundedDelete02,
-                        iconColor: colors.error,
-                        title: 'Azzera tutto',
-                        onTap: () async {
-                          final ok = await confirmDialog(
-                            context,
-                            title: 'Azzera tutto?',
-                            message:
-                                'Verranno cancellati condominio, unità, letture e bollette.',
-                            confirmLabel: 'Azzera',
-                            destructive: true,
-                          );
-                          if (ok && context.mounted) {
-                            await StoreScope.read(context).resetAll();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
+                      onPress: () async {
+                        final ok = await confirmDialog(
+                          context,
+                          title: 'Caricare l’esempio?',
+                          message:
+                              'I dati attuali saranno sostituiti con l’esempio di Milano.',
+                          confirmLabel: 'Carica esempio',
+                        );
+                        if (ok && context.mounted) {
+                          await StoreScope.read(context).loadDemo();
+                        }
+                      },
+                    ),
+                    FTile(
+                      variant: FItemVariant.destructive,
+                      prefix: const HugeIcon(icon: HugeIcons.strokeRoundedDelete02),
+                      title: const Text('Azzera tutto'),
+                      onPress: () async {
+                        final ok = await confirmDialog(
+                          context,
+                          title: 'Azzera tutto?',
+                          message:
+                              'Verranno cancellati condominio, unità, letture e bollette.',
+                          confirmLabel: 'Azzera',
+                          destructive: true,
+                        );
+                        if (ok && context.mounted) {
+                          await StoreScope.read(context).resetAll();
+                        }
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 18),
                 const SectionLabel('Informazioni'),
@@ -272,69 +272,6 @@ class _ThemeTile extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Tile extends StatelessWidget {
-  const _Tile({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    this.iconColor,
-    this.onTap,
-  });
-
-  final Object icon;
-  final String title;
-  final String? subtitle;
-  final Color? iconColor;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.theme.colors;
-    final typo = context.theme.typography;
-    return FTappable(
-      onPress: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        child: Row(
-          children: [
-            HugeIcon(
-              icon: icon as List<List<dynamic>>,
-              size: 20,
-              color: iconColor ?? colors.foreground,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  if (subtitle != null)
-                    Text(
-                      subtitle!,
-                      style: typo.body.xs.copyWith(
-                        color: colors.mutedForeground,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TileDivider extends StatelessWidget {
-  const _TileDivider({super.key});
-
-  @override
-  Widget build(BuildContext context) => const FDivider();
 }
 
 class CondoFormScreen extends StatefulWidget {

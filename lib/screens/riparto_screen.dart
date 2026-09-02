@@ -375,7 +375,7 @@ class _ConfrontoSheet extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'Stesso importo, cinque criteri',
-                style: context.theme.typography.display.sm.copyWith(
+                style: context.theme.typography.display.md.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -476,22 +476,26 @@ class _MetodiTable extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    name('Int.', header: true),
-                    for (final m in MetodoRiparto.values)
-                      cell(m.label, header: true),
-                  ],
+              // Riga d'intestazione: sfondo muted e bordo inferiore pieno,
+              // così le colonne hanno una testata visiva vera e propria.
+              ColoredBox(
+                color: colors.muted,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    children: [
+                      name('Int.', header: true),
+                      for (final m in MetodoRiparto.values)
+                        cell(m.label, header: true),
+                    ],
+                  ),
                 ),
               ),
-              const FDivider(),
               for (var i = 0; i < store.unita.length; i++) ...[
                 ColoredBox(
                   color: i.isEven ? colors.background : colors.card,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
                       children: [
                         name(store.unita[i].interno),
@@ -509,13 +513,19 @@ class _MetodiTable extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (i < store.unita.length - 1) const FDivider(),
+                if (i < store.unita.length - 1)
+                  Divider(height: 1, thickness: 1, color: colors.border),
               ],
-              const FDivider(),
-              ColoredBox(
-                color: colors.muted,
+              // Riga dei totali: sfondo muted e bordo superiore pieno: chiude
+              // visivamente la tabella senza FDivider (che è inset e spezzava
+              // l'allineamento a tutta larghezza).
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colors.muted,
+                  border: Border(top: BorderSide(color: colors.border)),
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Row(
                     children: [
                       name('TOT', bold: true),

@@ -51,10 +51,10 @@ class DashboardScreen extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         c.nome,
-                        style: typo.display.sm.copyWith(
+                        style: typo.display.md.copyWith(
                           color: colors.primaryForeground,
                           fontWeight: FontWeight.w700,
-                          height: 1.1,
+                          height: 1.15,
                         ),
                       ),
                       if (c.indirizzoCompleto.isNotEmpty) ...[
@@ -290,16 +290,15 @@ class _Quick extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.theme.colors;
+    // Il variant secondary applica già i colori corretti di sfondo, testo e
+    // icona (FButton avvolge il prefix in IconTheme e il child in
+    // DefaultTextStyle): non forzare colori, pena bianco-su-grigio nel tema
+    // chiaro.
     return FButton(
       variant: FButtonVariant.secondary,
       onPress: onTap,
-      prefix: HugeIcon(
-        icon: icon as List<List<dynamic>>,
-        size: 18,
-        color: colors.primaryForeground,
-      ),
-      child: Text(label, style: TextStyle(color: colors.primaryForeground)),
+      prefix: HugeIcon(icon: icon as List<List<dynamic>>, size: 18),
+      child: Text(label),
     );
   }
 }

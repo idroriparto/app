@@ -192,18 +192,36 @@ class MetricGrid extends StatelessWidget {
     builder: (context, box) {
       final cols = box.maxWidth > 720 ? 4 : 2;
       const gap = 12.0;
-      final w = (box.maxWidth - gap * (cols - 1)) / cols;
-      return Wrap(
-        spacing: gap,
-        runSpacing: gap,
-        children: [
-          for (var i = 0; i < children.length; i++)
-            Appear(
-              index: i,
-              child: SizedBox(width: w, child: children[i]),
+      // Righe esplicite + IntrinsicHeight + stretch: ogni card della riga ha
+      // la stessa larghezza (Expanded) e la stessa altezza della card più
+      // alta della riga, così i box della griglia risultano allineati.
+      final rows = <Widget>[];
+      for (var start = 0; start < children.length; start += cols) {
+        final rowChildren = <Widget>[];
+        for (var j = 0; j < cols; j++) {
+          final i = start + j;
+          if (j > 0) rowChildren.add(const SizedBox(width: gap));
+          rowChildren.add(
+            Expanded(
+              child: i < children.length
+                  ? Appear(index: i, child: children[i])
+                  : const SizedBox.shrink(),
             ),
-        ],
-      );
+          );
+        }
+        rows.add(
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: rowChildren,
+            ),
+          ),
+        );
+        if (start + cols < children.length) {
+          rows.add(const SizedBox(height: gap));
+        }
+      }
+      return Column(children: rows);
     },
   );
 }
@@ -754,42 +772,45 @@ Future<DateTime?> pickDate(
     builder: (context, style, animation) => FDialog(
       style: style,
       animation: animation,
-      constraints: const BoxConstraints(minWidth: 320, maxWidth: 400),
-      builder: (context, style) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Scegli la data', style: style.titleTextStyle),
-          const SizedBox(height: 12),
-          FCalendar.grid(
-            control: FGridCalendarControl(
-              start: loUtc,
-              today: todayUtc,
-              initial: initialUtc,
-              end: hiUtc,
-            ),
-            selectionControl: FDateSelectionControl.liftedSingle(
-              value: initialUtc,
-              onChange: (_) {},
-            ),
-            onDayPress: (d) => Navigator.of(context).pop(toLocal(d)),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              SizedBox(
-                width: 130,
-                child: FButton(
-                  size: FButtonSizeVariant.sm,
-                  variant: FButtonVariant.ghost,
-                  onPress: () => Navigator.of(context).pop(),
-                  child: const Text('Annulla'),
-                ),
+      constraints: const BoxConstraints(minWidth: 320, maxWidth: 420),
+      builder: (context, style) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Scegli la data', style: style.titleTextStyle),
+            const SizedBox(height: 12),
+            FCalendar.grid(
+              control: FGridCalendarControl(
+                start: loUtc,
+                today: todayUtc,
+                initial: initialUtc,
+                end: hiUtc,
               ),
-            ],
-          ),
-        ],
+              selectionControl: FDateSelectionControl.liftedSingle(
+                value: initialUtc,
+                onChange: (_) {},
+              ),
+              onDayPress: (d) => Navigator.of(context).pop(toLocal(d)),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                SizedBox(
+                  width: 130,
+                  child: FButton(
+                    size: FButtonSizeVariant.sm,
+                    variant: FButtonVariant.ghost,
+                    onPress: () => Navigator.of(context).pop(),
+                    child: const Text('Annulla'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -819,36 +840,39 @@ Future<bool> confirmDialog(
     builder: (context, style, animation) => FDialog(
       style: style,
       animation: animation,
-      builder: (context, style) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: style.titleTextStyle),
-          const SizedBox(height: 10),
-          Text(message, style: style.bodyTextStyle),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: FButton(
-                  variant: FButtonVariant.outline,
-                  onPress: () => Navigator.of(context).pop(false),
-                  child: Text(cancelLabel),
+      builder: (context, style) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: style.titleTextStyle),
+            const SizedBox(height: 10),
+            Text(message, style: style.bodyTextStyle),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: FButton(
+                    variant: FButtonVariant.outline,
+                    onPress: () => Navigator.of(context).pop(false),
+                    child: Text(cancelLabel),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FButton(
-                  variant: destructive
-                      ? FButtonVariant.destructive
-                      : FButtonVariant.primary,
-                  onPress: () => Navigator.of(context).pop(true),
-                  child: Text(confirmLabel),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FButton(
+                    variant: destructive
+                        ? FButtonVariant.destructive
+                        : FButtonVariant.primary,
+                    onPress: () => Navigator.of(context).pop(true),
+                    child: Text(confirmLabel),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -868,38 +892,41 @@ Future<String?> promptDialog(
     builder: (context, style, animation) => FDialog(
       style: style,
       animation: animation,
-      builder: (context, style) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: style.titleTextStyle),
-          const SizedBox(height: 12),
-          FTextField(
-            control: FTextFieldControl.managed(controller: controller),
-            maxLines: 8,
-            hint: hint,
-            autofocus: true,
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: FButton(
-                  variant: FButtonVariant.outline,
-                  onPress: () => Navigator.of(context).pop(),
-                  child: const Text('Annulla'),
+      builder: (context, style) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: style.titleTextStyle),
+            const SizedBox(height: 12),
+            FTextField(
+              control: FTextFieldControl.managed(controller: controller),
+              maxLines: 8,
+              hint: hint,
+              autofocus: true,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: FButton(
+                    variant: FButtonVariant.outline,
+                    onPress: () => Navigator.of(context).pop(),
+                    child: const Text('Annulla'),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FButton(
-                  onPress: () => Navigator.of(context).pop(controller.text),
-                  child: Text(confirmLabel),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FButton(
+                    onPress: () => Navigator.of(context).pop(controller.text),
+                    child: Text(confirmLabel),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     ),
   );

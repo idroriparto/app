@@ -46,7 +46,7 @@ class LettureScreen extends StatelessWidget {
                           children: [
                             Text(
                               'Letture contatori',
-                              style: typo.display.sm.copyWith(
+                              style: typo.display.md.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

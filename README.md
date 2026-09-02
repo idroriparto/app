@@ -23,20 +23,11 @@ Pensata per amministratori, consiglieri e condomini che vogliono un prospetto ch
 - **Prospetto PDF** (tabella + tagliandi individuali) e **CSV** per Excel.
 - Tema chiaro / scuro e backup JSON.
 
-## Metodo misto (quello che usa la prassi)
-
-1. La **quota fissa** si divide per millesimi, parti uguali o occupanti.
-2. La quota variabile (acquedotto + fognatura + depurazione) ha un prezzo medio €/m³.
-3. Ogni unità paga i **propri metri cubi**.
-4. La differenza tra contatore generale (o m³ fatturati) e somma dei sottocontatori — giardino, androne, perdite — si ripartisce come spesa comune.
-5. IVA e altre voci si spalmano in proporzione al subtotale.
-6. Gli arrotondamenti al centesimo vengono chiusi sull’unità con la quota più alta, così la somma coincide sempre con la bolletta.
-
-Il regolamento contrattuale o una delibera possono imporre un criterio diverso. IdroRiparto è uno strumento di calcolo, non un parere legale.
+IdroRiparto è uno strumento di calcolo, non un parere legale.
 
 ## Avvio
 
-Requisiti: Flutter 3.32+ (testata con 3.44), Dart 3.8+.
+Requisiti: Flutter 3.47+
 
 ```bash
 cd idroriparto
@@ -46,9 +37,10 @@ flutter run -d chrome          # oppure un emulatore / un telefono
 flutter build apk              # Android
 flutter build ios              # iOS (su macOS)
 flutter build web              # cartella build/web
+flutter build linux
 ```
 
-Al primo avvio puoi **creare il tuo condominio** oppure aprire l’esempio **Palazzo Solferino** (Milano, 8 unità, letture 2025–2026 e due bollette MM già ripartite).
+Al primo avvio puoi **creare il tuo condominio** oppure consultare l’esempio **Palazzo Solferino** (Milano, 8 unità, letture 2025–2026 e due bollette già ripartite).
 
 ## Struttura
 
@@ -67,4 +59,4 @@ lib/
 
 ## Piattaforme
 
-Android, iOS e Web. La persistenza usa `shared_preferences` (LocalStorage sul web).
+Android, iOS, Web, Linux (WIP Windows). La persistenza usa `shared_preferences` (LocalStorage sul web).

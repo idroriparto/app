@@ -1,4 +1,5 @@
 <div align="center">
+ <img src="assets/brand/logo_source.png" alt="IdroRiparto Logo" width="120"/>
  <h1>IdroRiparto</h1>
 
 App per la **ripartizione dei consumi e delle spese dell’acqua condominiale**.

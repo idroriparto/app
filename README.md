@@ -5,6 +5,13 @@
 App per la **ripartizione dei consumi e delle spese dell’acqua condominiale**.
 
 Pensata per amministratori, consiglieri e condomini che vogliono un prospetto chiaro, ripetibile e pronto per l’assemblea. I dati restano sul dispositivo: niente account, niente cloud.
+
+ <p align="center">
+  <a href="https://github.com/idroriparto/idroriparto">
+   <img src="https://img.shields.io/github/last-commit/idroriparto/idroriparto?style=flat">
+  </a>
+ </p>
+
 </div>
 
 ## Cosa fa

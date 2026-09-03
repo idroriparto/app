@@ -8,7 +8,9 @@ Pensata per amministratori, consiglieri e condomini che vogliono un prospetto ch
 
  <p align="center">
   <a href="https://github.com/idroriparto/idroriparto">
-   <img src="https://img.shields.io/github/last-commit/idroriparto/idroriparto?style=flat">
+   <img src="https://img.shields.io/github/last-commit/idroriparto/idroriparto?style=flat&label=Ultimo%20commit">
+   <img src="https://img.shields.io/github/v/release/idroriparto/idroriparto?style=flat&label=Ultima%20versione">
+   <img src="https://img.shields.io/github/stars/idroriparto/idroriparto?style=flat&logo=github&label=Stelle">
   </a>
  </p>
 

@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Necessario anche nelle build release per la verifica delle release GitHub. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:label="IdroRiparto"
         android:name="${applicationName}"

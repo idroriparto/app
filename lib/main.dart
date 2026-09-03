@@ -4,9 +4,11 @@ import 'package:forui/forui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'data/store.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/shell.dart';
 import 'screens/welcome_screen.dart';
 import 'theme/theme.dart';
+import 'widgets/update_check_host.dart';
 import 'widgets/widgets.dart';
 
 Future<void> main() async {
@@ -61,11 +63,15 @@ class IdroRipartoApp extends StatelessWidget {
               data: fTheme,
               child: FToaster(child: FTooltipGroup(child: child!)),
             ),
-            home: !store.ready
-                ? const _Boot(key: ValueKey('boot'))
-                : store.condominio == null
-                ? const WelcomeScreen(key: ValueKey('welcome'))
-                : const AppShell(key: ValueKey('shell')),
+            home: UpdateCheckHost(
+              child: !store.ready
+                  ? const _Boot(key: ValueKey('boot'))
+                  : !store.hasCompletedOnboarding
+                  ? const OnboardingScreen(key: ValueKey('onboarding'))
+                  : store.condominio == null
+                  ? const WelcomeScreen(key: ValueKey('welcome'))
+                  : const AppShell(key: ValueKey('shell')),
+            ),
           );
         },
       ),

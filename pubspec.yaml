@@ -1,7 +1,9 @@
 name: idroriparto
 description: Ripartizione consumi e spese dell'acqua condominiale.
 publish_to: "none"
-version: 1.0.0+3
+# Da pubblicare insieme al tag GitHub v1.0.4: il controllo aggiornamenti
+# confronta la versione SemVer installata con la tag della release.
+version: 1.0.4+4
 
 environment:
   sdk: ^3.12.2
@@ -15,6 +17,10 @@ dependencies:
   shared_preferences: ^2.5.3
   pdf: ^3.11.3
   printing: ^5.14.2
+  # Release e metadati dell'app
+  http: ^1.6.0
+  package_info_plus: ^10.2.1
+  url_launcher: ^6.3.2
   # UI
   forui: ^0.26.0
   material_ui: ^1.0.0

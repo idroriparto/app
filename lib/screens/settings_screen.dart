@@ -4,13 +4,103 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:forui/forui.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../data/store.dart';
 import '../models/models.dart';
+import '../services/update_service.dart';
+import '../utils/format.dart';
+import '../widgets/update_check_host.dart';
 import '../widgets/widgets.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _checkingUpdate = false;
+  String? _installedVersion;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInstalledVersion();
+  }
+
+  Future<void> _loadInstalledVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (!mounted) return;
+      final build = info.buildNumber.isEmpty
+          ? ''
+          : ' (build ${info.buildNumber})';
+      setState(() => _installedVersion = '${info.version}$build');
+    } catch (_) {
+      // La schermata resta utilizzabile anche su una piattaforma che non
+      // espone i metadati dell'app, per esempio durante un test widget.
+      if (mounted) setState(() => _installedVersion = 'non disponibile');
+    }
+  }
+
+  Future<void> _checkForUpdates() async {
+    if (_checkingUpdate) return;
+    AppMotion.tap();
+    setState(() => _checkingUpdate = true);
+    final result = await StoreScope.read(context).checkForUpdates(force: true);
+    if (!mounted) return;
+    setState(() => _checkingUpdate = false);
+
+    switch (result.status) {
+      case UpdateCheckStatus.updateAvailable:
+        final release = result.release;
+        if (release != null) {
+          // Evita che l'host automatico mostri lo stesso avviso in parallelo
+          // al dialogo richiesto manualmente dall'utente.
+          await StoreScope.read(context).markUpdateNotified(release);
+          if (mounted) {
+            await showUpdateAvailableDialog(context, release: release);
+          }
+        }
+        return;
+      case UpdateCheckStatus.upToDate:
+        showToast(context, 'Hai già la versione più recente.');
+        return;
+      case UpdateCheckStatus.noRelease:
+        showToast(context, 'Non è stata ancora pubblicata una release.');
+        return;
+      case UpdateCheckStatus.failed:
+        showToast(
+          context,
+          result.message ?? 'Impossibile verificare gli aggiornamenti.',
+        );
+        return;
+      case UpdateCheckStatus.skippedDisabled:
+      case UpdateCheckStatus.skippedNotDue:
+        // Un controllo manuale usa force: true; questi esiti restano qui per
+        // completezza se in futuro il flusso viene riusato.
+        showToast(context, 'Controllo aggiornamenti rimandato.');
+        return;
+    }
+  }
+
+  String _updateStatus(AppStore store) {
+    if (!store.automaticUpdateChecksEnabled) {
+      return 'Controlli automatici disattivati';
+    }
+    final last = store.lastUpdateCheckAt;
+    final error = store.lastUpdateCheckError;
+    if (error != null) {
+      final when = last == null ? '' : ' (${dateShort.format(last)})';
+      return 'Ultimo tentativo$when: $error';
+    }
+    final available = store.availableUpdate;
+    if (available != null) return '${available.tagName} disponibile';
+    if (last == null) return 'Mai verificato';
+    return 'Ultima verifica: ${dateShort.format(last)}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +177,58 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 18),
+                const SectionLabel('Aggiornamenti'),
+                AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FSwitch(
+                        leadingLabel: true,
+                        value: store.automaticUpdateChecksEnabled,
+                        onChange: (enabled) async {
+                          AppMotion.tap();
+                          await StoreScope.read(
+                            context,
+                          ).setAutomaticUpdateChecksEnabled(enabled);
+                        },
+                        label: const Text('Controlli automatici'),
+                        description: const Text(
+                          'Verifica le release ufficiali GitHub al massimo una volta alla settimana.',
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        _updateStatus(store),
+                        style: typo.body.xs.copyWith(
+                          color: colors.mutedForeground,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      FButton(
+                        variant: FButtonVariant.outline,
+                        onPress: _checkingUpdate ? null : _checkForUpdates,
+                        prefix: HugeIcon(
+                          icon: HugeIcons.strokeRoundedRefresh,
+                          size: 17,
+                        ),
+                        child: Text(
+                          _checkingUpdate
+                              ? 'Verifica in corso…'
+                              : 'Verifica ora',
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Il download o la pagina della release si aprono solo dopo la tua conferma.',
+                        style: typo.body.xs.copyWith(
+                          color: colors.mutedForeground,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
                 const SectionLabel('Archivio'),
                 // FTileGroup: gruppo di tile ufficiale forui, con sfondo
                 // card, bordo e divisori inset allineati automaticamente
@@ -94,7 +236,9 @@ class SettingsScreen extends StatelessWidget {
                 FTileGroup(
                   children: [
                     FTile(
-                      prefix: const HugeIcon(icon: HugeIcons.strokeRoundedFileExport),
+                      prefix: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedFileExport,
+                      ),
                       title: const Text('Esporta JSON'),
                       subtitle: const Text(
                         'Copia l’intero archivio negli appunti',
@@ -118,12 +262,16 @@ class SettingsScreen extends StatelessWidget {
                       },
                     ),
                     FTile(
-                      prefix: const HugeIcon(icon: HugeIcons.strokeRoundedFileDownload),
+                      prefix: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedFileDownload,
+                      ),
                       title: const Text('Importa JSON'),
                       onPress: () => _import(context),
                     ),
                     FTile(
-                      prefix: const HugeIcon(icon: HugeIcons.strokeRoundedSparkles),
+                      prefix: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedSparkles,
+                      ),
                       title: const Text('Carica condominio di esempio'),
                       subtitle: const Text(
                         'Palazzo Solferino, Milano — sostituisce i dati attuali',
@@ -143,7 +291,9 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     FTile(
                       variant: FItemVariant.destructive,
-                      prefix: const HugeIcon(icon: HugeIcons.strokeRoundedDelete02),
+                      prefix: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedDelete02,
+                      ),
                       title: const Text('Azzera tutto'),
                       onPress: () async {
                         final ok = await confirmDialog(
@@ -157,6 +307,24 @@ class SettingsScreen extends StatelessWidget {
                         if (ok && context.mounted) {
                           await StoreScope.read(context).resetAll();
                         }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                const SectionLabel('Guida'),
+                FTileGroup(
+                  children: [
+                    FTile(
+                      prefix: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedPresentation02,
+                      ),
+                      title: const Text('Rivedi la presentazione'),
+                      subtitle: const Text(
+                        'Una panoramica delle funzioni principali',
+                      ),
+                      onPress: () async {
+                        await StoreScope.read(context).replayOnboarding();
                       },
                     ),
                   ],
@@ -190,7 +358,9 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Versione 2.0.0',
+                        _installedVersion == null
+                            ? 'Versione in lettura…'
+                            : 'Versione $_installedVersion',
                         style: typo.body.xs.copyWith(
                           color: colors.mutedForeground,
                         ),

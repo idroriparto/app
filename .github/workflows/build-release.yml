@@ -7,7 +7,36 @@ on:
   workflow_dispatch:
 
 jobs:
+  verify-release-version:
+    name: Verify release tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Match GitHub tag with pubspec version
+        shell: bash
+        run: |
+          # A manual dispatch builds the current revision without publishing a tag.
+          if [[ "${GITHUB_REF}" != refs/tags/* ]]; then
+            exit 0
+          fi
+
+          tag="${GITHUB_REF_NAME#v}"
+          version=$(awk '/^version:/ { print $2; exit }' pubspec.yaml)
+          version="${version%%+*}"
+          semver='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?$'
+          if [[ ! "$version" =~ $semver ]]; then
+            echo "pubspec version $version is not a supported SemVer value." >&2
+            exit 1
+          fi
+          if [[ "$tag" != "$version" ]]; then
+            echo "Tag v$tag and pubspec version $version do not match." >&2
+            exit 1
+          fi
+
   build-android:
+    needs: verify-release-version
     name: Build Android APK
     runs-on: ubuntu-latest
     steps:
@@ -39,6 +68,7 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
 
   build-web:
+    needs: verify-release-version
     name: Build Web
     runs-on: ubuntu-latest
     steps:
@@ -64,6 +94,7 @@ jobs:
           path: build/web
 
   build-linux-deb:
+    needs: verify-release-version
     name: Build Linux (Debian-based)
     runs-on: ubuntu-latest
     steps:
@@ -82,6 +113,9 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Install dependencies
+        run: flutter pub get
+
       - name: Get flutter_distributor
         run: dart pub global activate flutter_distributor
 
@@ -95,6 +129,7 @@ jobs:
           path: dist/**/*.deb
 
   build-linux-rpm:
+    needs: verify-release-version
     name: Build Linux (RPM-based)
     runs-on: ubuntu-latest
     steps:
@@ -113,6 +148,9 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Install dependencies
+        run: flutter pub get
+
       - name: Get flutter_distributor
         run: dart pub global activate flutter_distributor
 
@@ -130,7 +168,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
      contents: write
-    needs: [build-linux-deb, build-linux-rpm, build-android, build-web]
+    needs: [verify-release-version, build-linux-deb, build-linux-rpm, build-android, build-web]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

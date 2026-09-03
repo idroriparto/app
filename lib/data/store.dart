@@ -5,10 +5,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/models.dart';
 import '../services/riparto_engine.dart';
+import '../services/update_service.dart';
 import '../utils/ids.dart';
 import 'demo_data.dart';
 
 const _storageKey = 'idroriparto.snapshot.v1';
+const _onboardingKey = 'idroriparto.onboarding.completed.v1';
+const _automaticUpdateChecksKey = 'idroriparto.updates.enabled.v1';
+const _lastUpdateCheckKey = 'idroriparto.updates.last_check.v1';
+const _lastUpdateErrorKey = 'idroriparto.updates.last_error.v1';
+const _availableUpdateKey = 'idroriparto.updates.available.v1';
+const _lastNotifiedUpdateKey = 'idroriparto.updates.last_notified.v1';
 
 class AppSnapshot {
   const AppSnapshot({
@@ -68,8 +75,22 @@ class AppSnapshot {
 }
 
 class AppStore extends ChangeNotifier {
+  AppStore({UpdateService? updateService, DateTime Function()? clock})
+    : _updateService = updateService ?? UpdateService(),
+      _clock = clock ?? DateTime.now;
+
+  final UpdateService _updateService;
+  final DateTime Function() _clock;
+
   AppSnapshot _data = const AppSnapshot();
   bool ready = false;
+  bool _onboardingCompleted = false;
+  bool _automaticUpdateChecksEnabled = true;
+  DateTime? _lastUpdateCheckAt;
+  String? _lastUpdateCheckError;
+  String? _lastNotifiedUpdateTag;
+  GitHubRelease? _availableUpdate;
+  Future<UpdateCheckResult>? _updateCheckInFlight;
 
   Condominio? get condominio => _data.condominio;
   List<UnitaImmobiliare> get unita {
@@ -96,6 +117,29 @@ class AppStore extends ChangeNotifier {
 
   List<RisultatoRiparto> get riparti => List.unmodifiable(_data.riparti);
   ThemeChoice get themeChoice => _data.theme;
+
+  /// La presentazione è mostrata solo alla prima apertura dell'installazione.
+  bool get hasCompletedOnboarding => _onboardingCompleted;
+
+  /// Opt-in esplicito e persistente per i controlli automatici delle release.
+  bool get automaticUpdateChecksEnabled => _automaticUpdateChecksEnabled;
+  DateTime? get lastUpdateCheckAt => _lastUpdateCheckAt;
+  String? get lastUpdateCheckError => _lastUpdateCheckError;
+  GitHubRelease? get availableUpdate => _availableUpdate;
+
+  bool get updateCheckDue {
+    if (!_automaticUpdateChecksEnabled) return false;
+    final lastCheck = _lastUpdateCheckAt;
+    if (lastCheck == null) return true;
+    final now = _clock();
+    // Un orologio di sistema riportato indietro non deve sospendere per mesi
+    // le verifiche automatiche.
+    return now.isBefore(lastCheck) ||
+        now.difference(lastCheck) >= updateCheckInterval;
+  }
+
+  bool shouldNotifyFor(GitHubRelease release) =>
+      _lastNotifiedUpdateTag != release.tagName;
 
   ThemeMode get themeMode => switch (_data.theme) {
     ThemeChoice.system => ThemeMode.system,
@@ -191,6 +235,39 @@ class AppStore extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_storageKey);
+      // Le installazioni precedenti non avevano una chiave di onboarding:
+      // una snapshot esistente indica quindi che l'utente aveva già aperto app.
+      // Leggiamo queste preferenze prima della snapshot: anche un backup dati
+      // non più valido non deve riattivare il tour o perdere il consenso update.
+      final persistedOnboarding = prefs.getBool(_onboardingKey);
+      _onboardingCompleted = persistedOnboarding ?? (raw != null);
+      if (persistedOnboarding == null && raw != null) {
+        // Migrazione una tantum: da qui in poi tour e dati di condominio sono
+        // indipendenti, anche dopo un import o un reset dell'archivio.
+        await prefs.setBool(_onboardingKey, true);
+      }
+      _automaticUpdateChecksEnabled =
+          prefs.getBool(_automaticUpdateChecksKey) ?? true;
+      _lastUpdateCheckAt = DateTime.tryParse(
+        prefs.getString(_lastUpdateCheckKey) ?? '',
+      );
+      _lastUpdateCheckError = prefs.getString(_lastUpdateErrorKey);
+      _lastNotifiedUpdateTag = prefs.getString(_lastNotifiedUpdateKey);
+      final rawRelease = prefs.getString(_availableUpdateKey);
+      if (rawRelease != null && rawRelease.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(rawRelease);
+          if (decoded is Map) {
+            _availableUpdate = GitHubRelease.fromStoredJson(
+              Map<String, dynamic>.from(decoded),
+            );
+          }
+        } catch (_) {
+          // Una cache vecchia o danneggiata non deve impedire l'avvio.
+          _availableUpdate = null;
+        }
+      }
+
       if (raw != null && raw.isNotEmpty) {
         _data = AppSnapshot.fromJson(jsonDecode(raw) as Map<String, dynamic>);
       }
@@ -210,6 +287,122 @@ class AppStore extends ChangeNotifier {
       debugPrint('IdroRiparto save error: $e');
     }
   }
+
+  Future<void> _saveAppPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_onboardingKey, _onboardingCompleted);
+      await prefs.setBool(
+        _automaticUpdateChecksKey,
+        _automaticUpdateChecksEnabled,
+      );
+      await _setOptionalString(
+        prefs,
+        _lastUpdateCheckKey,
+        _lastUpdateCheckAt?.toIso8601String(),
+      );
+      await _setOptionalString(
+        prefs,
+        _lastUpdateErrorKey,
+        _lastUpdateCheckError,
+      );
+      await _setOptionalString(
+        prefs,
+        _availableUpdateKey,
+        _availableUpdate == null
+            ? null
+            : jsonEncode(_availableUpdate!.toJson()),
+      );
+      await _setOptionalString(
+        prefs,
+        _lastNotifiedUpdateKey,
+        _lastNotifiedUpdateTag,
+      );
+    } catch (e) {
+      debugPrint('IdroRiparto preferences save error: $e');
+    }
+  }
+
+  Future<void> _setOptionalString(
+    SharedPreferences prefs,
+    String key,
+    String? value,
+  ) async {
+    if (value == null || value.isEmpty) {
+      await prefs.remove(key);
+    } else {
+      await prefs.setString(key, value);
+    }
+  }
+
+  Future<void> completeOnboarding() async {
+    if (_onboardingCompleted) return;
+    _onboardingCompleted = true;
+    notifyListeners();
+    await _saveAppPreferences();
+  }
+
+  Future<void> replayOnboarding() async {
+    _onboardingCompleted = false;
+    notifyListeners();
+    await _saveAppPreferences();
+  }
+
+  Future<void> setAutomaticUpdateChecksEnabled(bool enabled) async {
+    if (_automaticUpdateChecksEnabled == enabled) return;
+    _automaticUpdateChecksEnabled = enabled;
+    notifyListeners();
+    await _saveAppPreferences();
+  }
+
+  Future<UpdateCheckResult> checkForUpdates({bool force = false}) {
+    final inFlight = _updateCheckInFlight;
+    if (inFlight != null) return inFlight;
+    if (!force && !_automaticUpdateChecksEnabled) {
+      return Future.value(const UpdateCheckResult.skippedDisabled());
+    }
+    if (!force && !updateCheckDue) {
+      return Future.value(const UpdateCheckResult.skippedNotDue());
+    }
+
+    late final Future<UpdateCheckResult> future;
+    future = _performUpdateCheck().whenComplete(() {
+      if (identical(_updateCheckInFlight, future)) {
+        _updateCheckInFlight = null;
+      }
+    });
+    _updateCheckInFlight = future;
+    return future;
+  }
+
+  Future<UpdateCheckResult> _performUpdateCheck() async {
+    _lastUpdateCheckAt = _clock();
+    _lastUpdateCheckError = null;
+    notifyListeners();
+    await _saveAppPreferences();
+
+    final result = await _updateService.check();
+    if (result.isFailure) {
+      _lastUpdateCheckError = result.message;
+      // Manteniamo l'ultima release nota: potrebbe essere ancora scaricabile
+      // anche quando la verifica corrente fallisce per assenza di rete.
+    } else {
+      _lastUpdateCheckError = null;
+      _availableUpdate = result.hasUpdate ? result.release : null;
+    }
+    await _saveAppPreferences();
+    notifyListeners();
+    return result;
+  }
+
+  Future<void> markUpdateNotified(GitHubRelease release) async {
+    if (_lastNotifiedUpdateTag == release.tagName) return;
+    _lastNotifiedUpdateTag = release.tagName;
+    await _saveAppPreferences();
+  }
+
+  Future<bool> openUpdate(GitHubRelease release) =>
+      _updateService.open(release);
 
   Future<void> loadDemo() async {
     _data = buildDemoSnapshot();

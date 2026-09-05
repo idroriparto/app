@@ -7,6 +7,10 @@ import 'icons.dart';
 const kFontFamily = 'NimbusSansL';
 
 /// Blu del marchio IdroRiparto (campionato dal logo).
+///
+/// I segni grafici vengono mostrati in questo colore su superfici chiare
+/// (contrasto con il bianco: 5.26:1). Il blu più chiaro serve solo al tema
+/// scuro, dove il blu esatto non sarebbe sufficientemente leggibile.
 const kBrandBlue = Color(0xFF2264E2);
 const kBrandBlueDark = Color(0xFF6E9BFF);
 
@@ -26,6 +30,10 @@ FThemeData _build(FThemeData base, {required Color primary}) {
   // I preset "touch" usano sempre l'interfaccia tattile (mobile/web/desktop
   // in modalità touch), quindi costruiamo i typeface con touch: true.
   const touch = true;
+  // Il foreground del primario è il colore del testo/iconografia *sopra* un
+  // pulsante o pannello primario. Lo ereditiamo dal preset Forui per non
+  // introdurre blu su blu: i segni del brand usano invece [kBrandBlue] su
+  // una superficie chiara.
   final colors = base.colors.copyWith(primary: primary);
 
   final typography = base.typography.copyWith(

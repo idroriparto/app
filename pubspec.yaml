@@ -37,16 +37,22 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
+  # L'immagine sorgente è RGBA ma interamente opaca; esporta PNG iOS senza
+  # canale alpha, come richiesto dall'App Store.
+  remove_alpha_ios: true
   image_path: assets/brand/logo_source.png
-  adaptive_icon_background: "#2264E2"
-  adaptive_icon_foreground: assets/brand/logo_source.png
+  # Il marchio blu è su una base chiara, anche nell'icona adattiva Android.
+  adaptive_icon_background: "#FFFFFF"
+  # L'asset ha già il margine sicuro previsto per il layer adattivo.
+  adaptive_icon_foreground_inset: 0
+  adaptive_icon_foreground: assets/brand/logo_mono.png
   adaptive_icon_monochrome: assets/brand/logo_mono.png
   min_sdk_android: 24
   web:
     generate: true
     image_path: assets/brand/logo_source.png
     background_color: "#FFFFFF"
-    theme_color: "#2264E2"
+    theme_color: "#FAFAFA"
 
 flutter:
   uses-material-design: true

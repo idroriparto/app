@@ -6,7 +6,7 @@ vendor: Francesco Vangi
 packager: Francesco Vangi
 packagerEmail: idroriparto@yahoo.com
 license: GPL 3.0
-url: https://github.com/idroriparto/idroriparto
+url: https://github.com/idroriparto/app
 
 build_arch: x86_64
 

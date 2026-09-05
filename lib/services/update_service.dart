@@ -7,7 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Repository pubblico da cui l'app legge esclusivamente le release pubblicate.
-const githubRepository = 'idroriparto/idroriparto';
+const githubRepository = 'idroriparto/app';
 
 /// Cadenza del controllo automatico. Un controllo manuale la ignora.
 const updateCheckInterval = Duration(days: 7);

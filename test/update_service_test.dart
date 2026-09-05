@@ -48,9 +48,12 @@ void main() {
         expect(result.release?.tagName, 'v1.0.5');
         expect(
           result.release?.actionUriFor(UpdatePlatform.android).toString(),
-          'https://github.com/idroriparto/idroriparto/releases/download/v1.0.5/app-release.apk',
+          'https://github.com/idroriparto/app/releases/download/v1.0.5/app-release.apk',
         );
-        expect(request?.url.toString(), contains('/releases/latest'));
+        expect(
+          request?.url.toString(),
+          'https://api.github.com/repos/idroriparto/app/releases/latest',
+        );
         expect(request?.headers['accept'], 'application/vnd.github+json');
       },
     );
@@ -95,7 +98,7 @@ void main() {
 
       expect(
         release.actionUriFor(UpdatePlatform.linux).toString(),
-        'https://github.com/idroriparto/idroriparto/releases/tag/v1.0.5',
+        'https://github.com/idroriparto/app/releases/tag/v1.0.5',
       );
       expect(release.actionLabelFor(UpdatePlatform.linux), 'Apri la release');
     });
@@ -119,12 +122,12 @@ Map<String, dynamic> _releaseJson({required String tag}) => {
   'name': 'IdroRiparto $tag',
   'body': 'Miglioramenti e correzioni.',
   'published_at': '2026-09-03T10:00:00Z',
-  'html_url': 'https://github.com/idroriparto/idroriparto/releases/tag/$tag',
+  'html_url': 'https://github.com/idroriparto/app/releases/tag/$tag',
   'assets': [
     {
       'name': 'app-release.apk',
       'browser_download_url':
-          'https://github.com/idroriparto/idroriparto/releases/download/$tag/app-release.apk',
+          'https://github.com/idroriparto/app/releases/download/$tag/app-release.apk',
     },
   ],
 };

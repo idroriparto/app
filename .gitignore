@@ -50,3 +50,8 @@ android/app/build/
 *.aab
 .flutter-plugins
 .hic/
+
+
+keystore/
+/keystore/
+*.jks

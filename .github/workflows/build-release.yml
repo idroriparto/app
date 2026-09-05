@@ -23,11 +23,16 @@ jobs:
           fi
 
           tag="${GITHUB_REF_NAME#v}"
-          version=$(awk '/^version:/ { print $2; exit }' pubspec.yaml)
-          version="${version%%+*}"
+          raw_version=$(awk '/^version:/ { print $2; exit }' pubspec.yaml)
+          version="${raw_version%%+*}"
+          build_number="${raw_version#*+}"
           semver='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+)(\.[0-9A-Za-z-]+)*)?$'
           if [[ ! "$version" =~ $semver ]]; then
             echo "pubspec version $version is not a supported SemVer value." >&2
+            exit 1
+          fi
+          if [[ "$raw_version" == "$version" || ! "$build_number" =~ ^[1-9][0-9]*$ ]]; then
+            echo "pubspec version must include a positive Android build number, for example 1.0.5+5." >&2
             exit 1
           fi
           if [[ "$tag" != "$version" ]]; then
@@ -58,7 +63,42 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Restore Android release keystore
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for variable in \
+            ANDROID_KEYSTORE_BASE64 \
+            ANDROID_KEYSTORE_PASSWORD \
+            ANDROID_KEY_ALIAS \
+            ANDROID_KEY_PASSWORD; do
+            if [[ -z "${!variable:-}" ]]; then
+              echo "::error::Secret mancante: $variable" >&2
+              exit 1
+            fi
+          done
+
+          keystore_path="$RUNNER_TEMP/idroriparto-release.keystore"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore_path"
+          test -s "$keystore_path"
+          chmod 600 "$keystore_path"
+          keytool -list \
+            -keystore "$keystore_path" \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -alias "$ANDROID_KEY_ALIAS" \
+            >/dev/null
+          echo "ANDROID_KEYSTORE_PATH=$keystore_path" >> "$GITHUB_ENV"
+
       - name: Build release APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: flutter build apk --release
 
       - name: Upload APK artifact
@@ -66,6 +106,11 @@ jobs:
         with:
           name: idroriparto-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Remove Android release keystore
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/idroriparto-release.keystore"
 
   build-web:
     needs: verify-release-version

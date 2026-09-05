@@ -1,5 +1,3 @@
-import 'dart:ui' show FontFeature;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:forui/forui.dart';
@@ -75,7 +73,7 @@ class SectionLabel extends StatelessWidget {
               ),
             ),
           ),
-          if (trailing != null) trailing!,
+          if (trailing case final trailing?) trailing,
         ],
       ),
     );
@@ -817,11 +815,21 @@ Future<DateTime?> pickDate(
 }
 
 /// Toast tramite il toaster di forui.
+///
+/// Li teniamo in alto, lontani dalla navigazione inferiore, e con un gesto
+/// verso l'alto breve per chiuderli rapidamente.
 void showToast(BuildContext context, String msg) {
   showFToast(
     context: context,
     title: Text(msg),
-    alignment: FToastAlignment.bottomCenter,
+    alignment: FToastAlignment.topCenter,
+    swipeToDismiss: const [AxisDirection.up],
+    dismissThreshold: 0.25,
+    style: const FToastStyleDelta.delta(
+      padding: EdgeInsetsGeometryDelta.value(
+        EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      ),
+    ),
     duration: const Duration(seconds: 3),
   );
 }

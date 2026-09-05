@@ -1,0 +1,11 @@
+# Copia questo file come android/key.properties per firmare una build release
+# locale. Non inserire mai credenziali reali in questo file di esempio e non
+# committare il file android/key.properties.
+#
+# Il percorso può essere assoluto, ad esempio:
+# /home/nomeutente/.android/idroriparto-release.keystore
+# C:\\Users\\nomeutente\\idroriparto-release.keystore
+storeFile=/percorso/assoluto/idroriparto-release.keystore
+storePassword=SOSTITUISCI_CON_PASSWORD_KEYSTORE
+keyAlias=idroriparto
+keyPassword=SOSTITUISCI_CON_PASSWORD_CHIAVE

@@ -3,6 +3,7 @@ import 'package:forui/forui.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../data/store.dart';
+import '../theme/theme.dart';
 import '../widgets/widgets.dart';
 
 /// Breve presentazione mostrata solo su una nuova installazione.
@@ -246,7 +247,9 @@ class _TourContent extends StatelessWidget {
             child: Center(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: colors.primary,
+                  // Il segno grafico del marchio resta sempre #2264E2 su una
+                  // superficie chiara: contrasto 5.26:1 anche in tema scuro.
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
@@ -261,7 +264,7 @@ class _TourContent extends StatelessWidget {
                   child: HugeIcon(
                     icon: step.icon as List<List<dynamic>>,
                     size: 48,
-                    color: colors.primaryForeground,
+                    color: kBrandBlue,
                   ),
                 ),
               ),

@@ -49,7 +49,7 @@ cd idroriparto
 flutter pub get
 flutter test
 flutter run -d chrome          # oppure un emulatore / un telefono
-flutter build apk              # Android
+flutter build apk --debug      # Android, per sviluppo
 flutter build ios              # iOS (su macOS)
 flutter build web              # cartella build/web
 flutter build linux
@@ -57,11 +57,13 @@ flutter build linux
 
 Al primo avvio una presentazione breve illustra anagrafica, letture, bollette, riparto e PDF. Al termine puoi **creare il tuo condominio** oppure consultare l’esempio **Palazzo Solferino** (Milano, 8 unità, letture 2025–2026 e due bollette già ripartite).
 
+Per creare un APK Android **release** installabile come aggiornamento, configura una keystore stabile seguendo [la guida alla firma Android](docs/android-signing.md). Le build release senza firma non vengono prodotte intenzionalmente.
+
 ## Aggiornamenti
 
-Dopo la presentazione iniziale, IdroRiparto consulta al massimo una volta ogni sette giorni la [release più recente](https://github.com/idroriparto/idroriparto/releases/latest) del repository GitHub. Il controllo può essere disattivato in **Impostazioni → Aggiornamenti**; **Verifica ora** resta disponibile anche quando i controlli automatici sono spenti.
+Dopo la presentazione iniziale, IdroRiparto consulta al massimo una volta ogni sette giorni la [release più recente](https://github.com/idroriparto/app/releases/latest) del repository GitHub. Il controllo può essere disattivato in **Impostazioni → Aggiornamenti**; **Verifica ora** resta disponibile anche quando i controlli automatici sono spenti.
 
-L'app non installa mai software in background: l'avviso apre, solo dopo conferma esplicita, l'APK ufficiale su Android oppure la pagina della release sulle altre piattaforme. Per pubblicare una release, la tag deve corrispondere alla versione SemVer di `pubspec.yaml` (ad esempio `version: 1.0.4+4` richiede la tag `v1.0.4`); il workflow CI lo verifica prima della build.
+L'app non installa mai software in background: l'avviso apre, solo dopo conferma esplicita, l'APK ufficiale su Android oppure la pagina della release sulle altre piattaforme. Per pubblicare una release, la tag deve corrispondere alla versione SemVer prima del `+` in `pubspec.yaml` (ad esempio `version: 1.0.5+5` richiede la tag `v1.0.5`); il build number dopo `+` deve crescere a ogni APK Android. Il workflow CI verifica il formato prima della build.
 
 ## Struttura
 

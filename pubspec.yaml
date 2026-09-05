@@ -3,7 +3,7 @@ description: Ripartizione consumi e spese dell'acqua condominiale.
 publish_to: "none"
 # Da pubblicare insieme al tag GitHub v1.0.4: il controllo aggiornamenti
 # confronta la versione SemVer installata con la tag della release.
-version: 1.0.4+4
+version: 1.0.5+5
 
 environment:
   sdk: ^3.12.2
